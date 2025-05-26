@@ -1,45 +1,53 @@
 
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { NavLink } from 'react-router-dom';
+import { Home, Users, Calendar, Tool, Volume2, BarChart2, Settings, LogOut, ChevronLeft, ChevronRight } from 'react-feather';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Home, Users, Calendar, Tool, Volume2, BarChart2, Settings, LogOut } from 'react-feather';
 
-const menuItems = [{
-  title: 'Dashboard',
-  url: '/dashboard',
-  icon: Home
-}, {
-  title: 'Leads',
-  url: '/leads',
-  icon: Users
-}, {
-  title: 'Agendamentos',
-  url: '/agendamentos',
-  icon: Calendar
-}, {
-  title: 'Ordens de Serviço',
-  url: '/ordens-servico',
-  icon: Tool
-}, {
-  title: 'Marketing Digital',
-  url: '/marketing',
-  icon: Volume2
-}, {
-  title: 'Relatórios',
-  url: '/relatorios',
-  icon: BarChart2
-}, {
-  title: 'Configurações',
-  url: '/configuracoes',
-  icon: Settings
-}];
+const menuItems = [
+  {
+    text: 'Dashboard',
+    to: '/dashboard',
+    icon: Home
+  },
+  {
+    text: 'Leads',
+    to: '/leads',
+    icon: Users
+  },
+  {
+    text: 'Agendamentos',
+    to: '/agendamentos',
+    icon: Calendar
+  },
+  {
+    text: 'Ordens de Serviço',
+    to: '/ordens-servico',
+    icon: Tool
+  },
+  {
+    text: 'Marketing Digital',
+    to: '/marketing',
+    icon: Volume2
+  },
+  {
+    text: 'Relatórios',
+    to: '/relatorios',
+    icon: BarChart2
+  },
+  {
+    text: 'Configurações',
+    to: '/configuracoes',
+    icon: Settings
+  }
+];
 
-const AppSidebar = () => {
-  const location = useLocation();
-  const { state } = useSidebar();
-  const isCollapsed = state === 'collapsed';
+interface AppSidebarProps {
+  isExpanded: boolean;
+  toggleSidebar: () => void;
+}
 
+const AppSidebar: React.FC<AppSidebarProps> = ({ isExpanded, toggleSidebar }) => {
   const handleLogout = () => {
     localStorage.removeItem('loggedIn');
     localStorage.removeItem('userEmail');
@@ -47,117 +55,96 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar 
-      collapsible="icon" 
-      className={`border-r border-sidebar-border shadow-lg transition-all duration-300 ease-in-out px-0 mx-0 ${
-        isCollapsed ? 'w-16' : 'w-64'
+    <aside
+      className={`h-screen bg-sidebar text-sidebar-foreground fixed top-0 left-0 z-40 flex flex-col transition-all duration-300 ease-in-out shadow-lg ${
+        isExpanded ? 'w-64' : 'w-16'
       }`}
     >
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className={`flex items-center transition-all duration-300 ease-in-out p-4 ${
-          isCollapsed ? 'justify-center' : 'justify-between'
-        }`}>
-          {!isCollapsed && (
-            <h2 className="text-lg font-bold text-sidebar-foreground">
-              PitStop
-            </h2>
-          )}
-          <SidebarTrigger className="h-8 w-8 transition-transform duration-150 ease-in-out hover:scale-110" />
-        </div>
-      </SidebarHeader>
+      {/* Header Section - Logo and Toggle */}
+      <div className="p-4 flex items-center justify-between border-b border-sidebar-border">
+        {isExpanded && (
+          <span className="text-xl font-semibold whitespace-nowrap">PitStop</span>
+        )}
+        <button
+          onClick={toggleSidebar}
+          className="p-1 rounded-lg hover:bg-sidebar-accent focus:outline-none focus:ring-2 focus:ring-sidebar-accent"
+          aria-label={isExpanded ? 'Recolher sidebar' : 'Expandir sidebar'}
+        >
+          {isExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+        </button>
+      </div>
 
-      <SidebarContent className={isCollapsed ? "px-1" : "px-2"}>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
-              {menuItems.map(item => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={location.pathname === item.url} 
-                    className={`
-                      transition-all duration-150 ease-in-out
-                      hover:bg-sidebar-accent hover:text-sidebar-accent-foreground 
-                      data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground
-                      ${isCollapsed ? 'h-12 w-12 p-0 justify-center mx-auto' : 'h-10 justify-start px-4'}
-                    `} 
-                    tooltip={isCollapsed ? item.title : undefined}
-                  >
-                    <NavLink 
-                      to={item.url} 
-                      className={`
-                        flex items-center transition-all duration-200 ease-in-out
-                        ${isCollapsed ? 'justify-center p-3' : 'justify-start px-0 gap-3'}
-                      `}
-                    >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {!isCollapsed && (
-                        <span className={`
-                          transition-all duration-200 ease-in-out truncate
-                          ${isCollapsed ? 'opacity-0 w-0 overflow-hidden whitespace-nowrap -translate-x-4' : 'opacity-100 translate-x-0'}
-                        `}>
-                          {item.title}
-                        </span>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="space-y-3">
-          {/* User Info */}
-          <div className={`
-            flex items-center transition-all duration-200 ease-in-out
-            ${isCollapsed ? 'justify-center' : 'gap-3'}
-          `}>
-            <Avatar className="h-8 w-8 flex-shrink-0">
-              <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-xs">
-                U
-              </AvatarFallback>
-            </Avatar>
-            {!isCollapsed && (
-              <span className={`
-                text-sm text-sidebar-foreground truncate transition-all duration-200 ease-in-out
-                ${isCollapsed ? 'opacity-0 w-0 overflow-hidden whitespace-nowrap' : 'opacity-100'}
-              `}>
-                Usuário
-              </span>
-            )}
-          </div>
-
-          {/* Logout Button */}
-          <SidebarMenuButton 
-            onClick={handleLogout} 
-            className={`
-              text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground 
-              transition-all duration-150 ease-in-out
-              ${isCollapsed ? 'h-12 w-12 p-0 justify-center mx-auto' : 'w-full justify-start px-4'}
-            `} 
-            tooltip={isCollapsed ? "Sair" : undefined}
+      {/* Navigation Section */}
+      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+        {menuItems.map((item, index) => (
+          <NavLink
+            key={index}
+            to={item.to}
+            className={({ isActive }) =>
+              `flex items-center p-2 rounded-md transition-colors duration-150 ease-in-out group ${
+                isExpanded ? 'justify-start px-4' : 'justify-center px-3'
+              } ${
+                isActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+              }`
+            }
+            title={isExpanded ? '' : item.text}
           >
-            <div className={`
-              flex items-center transition-all duration-200 ease-in-out
-              ${isCollapsed ? 'justify-center' : 'gap-3'}
-            `}>
-              <LogOut className="h-5 w-5 flex-shrink-0" />
-              {!isCollapsed && (
-                <span className={`
-                  truncate transition-all duration-200 ease-in-out
-                  ${isCollapsed ? 'opacity-0 w-0 overflow-hidden whitespace-nowrap' : 'opacity-100'}
-                `}>
-                  Sair
-                </span>
-              )}
-            </div>
-          </SidebarMenuButton>
+            <item.icon
+              className="shrink-0 h-5 w-5 transition duration-75"
+              aria-hidden="true"
+            />
+            <span
+              className={`ml-3 transition-all duration-200 ease-in-out whitespace-nowrap overflow-hidden ${
+                isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'
+              }`}
+            >
+              {item.text}
+            </span>
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Footer Section - User and Logout */}
+      <div className="border-t border-sidebar-border p-4 space-y-3">
+        {/* User Info */}
+        <div className={`flex items-center transition-all duration-200 ease-in-out ${
+          isExpanded ? 'justify-start gap-3' : 'justify-center'
+        }`}>
+          <Avatar className="h-8 w-8 flex-shrink-0">
+            <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-xs">
+              U
+            </AvatarFallback>
+          </Avatar>
+          {isExpanded && (
+            <span className={`text-sm text-sidebar-foreground truncate transition-all duration-200 ease-in-out ${
+              isExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden whitespace-nowrap'
+            }`}>
+              Usuário
+            </span>
+          )}
         </div>
-      </SidebarFooter>
-    </Sidebar>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className={`flex items-center p-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-150 ease-in-out w-full ${
+            isExpanded ? 'justify-start px-4' : 'justify-center px-3'
+          }`}
+          title={isExpanded ? '' : 'Sair'}
+        >
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <span
+            className={`ml-3 transition-all duration-200 ease-in-out whitespace-nowrap overflow-hidden ${
+              isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'
+            }`}
+          >
+            Sair
+          </span>
+        </button>
+      </div>
+    </aside>
   );
 };
 
