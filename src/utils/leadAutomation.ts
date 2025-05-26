@@ -1,4 +1,3 @@
-
 import { Lead, LeadHistoryEntry } from '@/pages/Leads';
 
 export interface LeadUpdateParams {
@@ -131,10 +130,12 @@ export const HISTORY_TYPES = {
   APPOINTMENT_DELETED: 'Agendamento Excluído',
   ATTENDANCE_REGISTERED: 'Comparecimento Registrado',
   EDIT: 'Edição',
-  // Futuros tipos para outras telas:
-  DIAGNOSIS_COMPLETED: 'Diagnóstico Realizado',
+  // Tipos para Ordens de Serviço:
   SERVICE_ORDER_CREATED: 'OS Criada',
   SERVICE_ORDER_STATUS: 'Status OS',
   SERVICE_ORDER_FINISHED: 'OS Finalizada',
+  SERVICE_ORDER_DELETED: 'OS Excluída',
+  // Futuros tipos para outras telas:
+  DIAGNOSIS_COMPLETED: 'Diagnóstico Realizado',
   LEAD_LOST: 'Lead Perdido'
 } as const;
