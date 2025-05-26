@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -6,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, Clock, User } from 'lucide-react';
-
 interface Appointment {
   id: string;
   leadId: string;
@@ -14,20 +12,18 @@ interface Appointment {
   time: string;
   serviceType: string;
 }
-
 interface AppointmentsTableProps {
   appointments: Appointment[];
 }
-
 interface Lead {
   id: string;
   name: string;
 }
-
-const AppointmentsTable = ({ appointments }: AppointmentsTableProps) => {
+const AppointmentsTable = ({
+  appointments
+}: AppointmentsTableProps) => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const navigate = useNavigate();
-
   React.useEffect(() => {
     // Load leads for name lookup
     try {
@@ -39,25 +35,23 @@ const AppointmentsTable = ({ appointments }: AppointmentsTableProps) => {
       console.error('Error loading leads:', error);
     }
   }, []);
-
   const getClientName = (leadId: string): string => {
     const lead = leads.find(l => l.id === leadId);
     return lead ? lead.name : 'Cliente não encontrado';
   };
-
   const handleRowClick = (appointmentId: string) => {
     navigate(`/agendamentos`);
   };
-
   const formatDate = (dateString: string) => {
     try {
       const date = parseISO(dateString);
-      return format(date, 'dd/MM', { locale: ptBR });
+      return format(date, 'dd/MM', {
+        locale: ptBR
+      });
     } catch {
       return '-';
     }
   };
-
   const formatTime = (timeString: string) => {
     try {
       return timeString || '-';
@@ -65,9 +59,7 @@ const AppointmentsTable = ({ appointments }: AppointmentsTableProps) => {
       return '-';
     }
   };
-
-  return (
-    <Card className="bg-card/95 backdrop-blur-sm border-0 shadow-sm ring-1 ring-border/50 h-full">
+  return <Card className="bg-card/95 backdrop-blur-sm border-0 shadow-sm ring-1 ring-border/50 h-full">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -82,13 +74,10 @@ const AppointmentsTable = ({ appointments }: AppointmentsTableProps) => {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {appointments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 text-muted-foreground p-6">
+        {appointments.length === 0 ? <div className="flex flex-col items-center justify-center h-48 text-muted-foreground p-6">
             <Calendar className="h-12 w-12 mb-4 opacity-50" />
             <p className="text-center">Nenhum agendamento próximo encontrado.</p>
-          </div>
-        ) : (
-          <div className="max-h-80 overflow-y-auto">
+          </div> : <div className="max-h-80 overflow-y-auto">
             <Table>
               <TableHeader className="sticky top-0 bg-card">
                 <TableRow className="border-b">
@@ -98,12 +87,7 @@ const AppointmentsTable = ({ appointments }: AppointmentsTableProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {appointments.map((appointment, index) => (
-                  <TableRow 
-                    key={appointment.id}
-                    className="cursor-pointer hover:bg-muted/30 transition-colors border-b border-border/50 group"
-                    onClick={() => handleRowClick(appointment.id)}
-                  >
+                {appointments.map((appointment, index) => <TableRow key={appointment.id} className="cursor-pointer hover:bg-muted/30 transition-colors border-b border-border/50 group" onClick={() => handleRowClick(appointment.id)}>
                     <TableCell className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="text-sm font-medium text-foreground">
@@ -125,20 +109,16 @@ const AppointmentsTable = ({ appointments }: AppointmentsTableProps) => {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="px-6 py-4">
+                    <TableCell className="py-4 px-[9px]">
                       <span className="text-sm text-muted-foreground truncate max-w-32 block">
                         {appointment.serviceType}
                       </span>
                     </TableCell>
-                  </TableRow>
-                ))}
+                  </TableRow>)}
               </TableBody>
             </Table>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default AppointmentsTable;
