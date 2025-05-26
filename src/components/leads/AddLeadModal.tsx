@@ -12,11 +12,20 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Lead } from '@/pages/Leads';
+
+interface Unit {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  createdAt: string;
+}
 
 interface AddLeadModalProps {
   isOpen: boolean;
@@ -35,10 +44,24 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
     cpf: '',
     carModel: '',
     carPlate: '',
+    unitId: '',
     history: [] as Array<{timestamp: string; type: string; description: string}>
   });
 
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
+  const [units, setUnits] = useState<Unit[]>([]);
+
+  // Load units from localStorage
+  useEffect(() => {
+    try {
+      const storedUnits = localStorage.getItem('pitstop_units');
+      if (storedUnits) {
+        setUnits(JSON.parse(storedUnits));
+      }
+    } catch (error) {
+      console.error('Error loading units:', error);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (editingLead) {
@@ -51,6 +74,7 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
         cpf: editingLead.cpf,
         carModel: editingLead.carModel || '',
         carPlate: editingLead.carPlate || '',
+        unitId: editingLead.unitId || '',
         history: editingLead.history
       });
       if (editingLead.birthDate) {
@@ -66,6 +90,7 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
         cpf: '',
         carModel: '',
         carPlate: '',
+        unitId: '',
         history: []
       });
       setBirthDate(undefined);
@@ -85,6 +110,10 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
     }));
   };
 
+  const handleUnitChange = (value: string) => {
+    setFormData(prev => ({ ...prev, unitId: value }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -92,6 +121,7 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
       ...formData,
       carModel: formData.carModel || undefined,
       carPlate: formData.carPlate || undefined,
+      unitId: formData.unitId || undefined,
     };
 
     onSave(leadData);
@@ -163,6 +193,23 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
                     />
                   </PopoverContent>
                 </Popover>
+              </div>
+
+              <div>
+                <Label htmlFor="unitId">Unidade Associada</Label>
+                <Select value={formData.unitId} onValueChange={handleUnitChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="-- Nenhuma --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-- Nenhuma --</SelectItem>
+                    {units.map((unit) => (
+                      <SelectItem key={unit.id} value={unit.id}>
+                        {unit.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

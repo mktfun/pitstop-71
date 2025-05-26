@@ -16,6 +16,14 @@ import { Lead, KanbanColumn, LeadHistoryEntry } from '@/pages/Leads';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+interface Unit {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  createdAt: string;
+}
+
 interface LeadDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,6 +39,26 @@ const LeadDetailsModal = ({ isOpen, onClose, lead, onEdit, onDelete, columns }: 
   if (!lead) return null;
 
   const currentColumn = columns.find(col => col.id === lead.columnId);
+
+  // Get unit information
+  const getUnitInfo = (unitId?: string) => {
+    if (!unitId) return null;
+    
+    try {
+      const storedUnits = localStorage.getItem('pitstop_units');
+      if (storedUnits) {
+        const units: Unit[] = JSON.parse(storedUnits);
+        return units.find(unit => unit.id === unitId) || null;
+      }
+    } catch (error) {
+      console.error('Error loading units:', error);
+    }
+    
+    return null;
+  };
+
+  const unitInfo = getUnitInfo(lead.unitId);
+  const unitDisplayName = lead.unitId ? (unitInfo ? unitInfo.name : 'Unidade Removida') : 'Nenhuma';
 
   const formatDate = (dateString: string) => {
     try {
@@ -190,6 +218,25 @@ const LeadDetailsModal = ({ isOpen, onClose, lead, onEdit, onDelete, columns }: 
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Endereço</label>
                     <p className="text-base">{lead.address}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Unidade Associada */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center space-x-2">
+                    <MapPin className="h-5 w-5" />
+                    <span>Unidade Associada</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Unidade</label>
+                    <p className="text-base">{unitDisplayName}</p>
+                    {unitInfo && unitInfo.address && (
+                      <p className="text-sm text-muted-foreground mt-1">{unitInfo.address}</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>

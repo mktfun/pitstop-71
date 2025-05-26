@@ -14,6 +14,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { KanbanColumn, Lead } from '@/pages/Leads';
 
+interface Unit {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  createdAt: string;
+}
+
 interface ListViewProps {
   columns: KanbanColumn[];
   leads: Lead[];
@@ -21,7 +29,7 @@ interface ListViewProps {
   onViewLead?: (lead: Lead) => void;
 }
 
-type SortField = 'name' | 'phone' | 'email' | 'createdAt' | 'status' | 'carModel' | 'cpf' | 'address' | 'birthDate';
+type SortField = 'name' | 'phone' | 'email' | 'createdAt' | 'status' | 'carModel' | 'cpf' | 'address' | 'birthDate' | 'unit';
 type SortOrder = 'asc' | 'desc';
 
 const colorVariants = {
@@ -38,6 +46,7 @@ const colorVariants = {
 const ListView = ({ columns, leads, onEditLead, onViewLead }: ListViewProps) => {
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [units, setUnits] = useState<Unit[]>([]);
 
   const columnsMap = useMemo(() => {
     return columns.reduce((acc, col) => {
@@ -45,6 +54,29 @@ const ListView = ({ columns, leads, onEditLead, onViewLead }: ListViewProps) => 
       return acc;
     }, {} as Record<string, KanbanColumn>);
   }, [columns]);
+
+  const unitsMap = useMemo(() => {
+    // Load units from localStorage
+    try {
+      const storedUnits = localStorage.getItem('pitstop_units');
+      if (storedUnits) {
+        const unitsArray: Unit[] = JSON.parse(storedUnits);
+        return unitsArray.reduce((acc, unit) => {
+          acc[unit.id] = unit;
+          return acc;
+        }, {} as Record<string, Unit>);
+      }
+    } catch (error) {
+      console.error('Error loading units:', error);
+    }
+    return {};
+  }, []);
+
+  const getUnitName = (unitId?: string) => {
+    if (!unitId) return '-';
+    const unit = unitsMap[unitId];
+    return unit ? unit.name : 'Unidade Removida';
+  };
 
   const sortedLeads = useMemo(() => {
     return [...leads].sort((a, b) => {
@@ -88,6 +120,10 @@ const ListView = ({ columns, leads, onEditLead, onViewLead }: ListViewProps) => 
           aValue = a.cpf.toLowerCase();
           bValue = b.cpf.toLowerCase();
           break;
+        case 'unit':
+          aValue = getUnitName(a.unitId).toLowerCase();
+          bValue = getUnitName(b.unitId).toLowerCase();
+          break;
         default:
           return 0;
       }
@@ -96,7 +132,7 @@ const ListView = ({ columns, leads, onEditLead, onViewLead }: ListViewProps) => 
       if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [leads, sortField, sortOrder, columnsMap]);
+  }, [leads, sortField, sortOrder, columnsMap, unitsMap]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -146,6 +182,7 @@ const ListView = ({ columns, leads, onEditLead, onViewLead }: ListViewProps) => 
                   <SortableHeader field="address">Endereço</SortableHeader>
                   <SortableHeader field="cpf">CPF</SortableHeader>
                   <SortableHeader field="carModel">Veículo</SortableHeader>
+                  <SortableHeader field="unit">Unidade</SortableHeader>
                   <SortableHeader field="birthDate">Nascimento</SortableHeader>
                   <SortableHeader field="createdAt">Criado em</SortableHeader>
                   <SortableHeader field="status">Status</SortableHeader>
@@ -174,6 +211,7 @@ const ListView = ({ columns, leads, onEditLead, onViewLead }: ListViewProps) => 
                           </div>
                         ) : '-'}
                       </TableCell>
+                      <TableCell>{getUnitName(lead.unitId)}</TableCell>
                       <TableCell>
                         {lead.birthDate ? new Date(lead.birthDate).toLocaleDateString('pt-BR') : '-'}
                       </TableCell>

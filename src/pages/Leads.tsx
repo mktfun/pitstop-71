@@ -32,6 +32,7 @@ export interface Lead {
   cpf: string;
   carModel?: string;
   carPlate?: string;
+  unitId?: string;
   createdAt: string;
   columnId: string;
   history: LeadHistoryEntry[];
