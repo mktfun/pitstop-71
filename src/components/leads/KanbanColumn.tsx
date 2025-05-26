@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { useDroppable, useSortable } from '@dnd-kit/core';
+import { useDroppable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Edit, Trash2, GripVertical } from 'lucide-react';
