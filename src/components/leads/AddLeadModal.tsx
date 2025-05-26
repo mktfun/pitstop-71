@@ -9,6 +9,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { Lead } from '@/pages/Leads';
 
 interface AddLeadModalProps {
@@ -27,10 +34,11 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
     birthDate: '',
     cpf: '',
     carModel: '',
-    carPlate: ''
+    carPlate: '',
+    history: [] as Array<{timestamp: string; type: string; description: string}>
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     if (editingLead) {
@@ -42,8 +50,12 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
         birthDate: editingLead.birthDate,
         cpf: editingLead.cpf,
         carModel: editingLead.carModel || '',
-        carPlate: editingLead.carPlate || ''
+        carPlate: editingLead.carPlate || '',
+        history: editingLead.history
       });
+      if (editingLead.birthDate) {
+        setBirthDate(new Date(editingLead.birthDate));
+      }
     } else {
       setFormData({
         name: '',
@@ -53,217 +65,188 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
         birthDate: '',
         cpf: '',
         carModel: '',
-        carPlate: ''
+        carPlate: '',
+        history: []
       });
+      setBirthDate(undefined);
     }
-    setErrors({});
   }, [editingLead, isOpen]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-    // Required fields
-    if (!formData.name.trim()) {
-      newErrors.name = 'Nome é obrigatório';
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Telefone é obrigatório';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
-    } else {
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        newErrors.email = 'Email deve ter um formato válido';
-      }
-    }
-
-    if (!formData.address.trim()) {
-      newErrors.address = 'Endereço é obrigatório';
-    }
-
-    if (!formData.cpf.trim()) {
-      newErrors.cpf = 'CPF é obrigatório';
-    } else {
-      // Basic CPF validation (just length and numbers)
-      const cpfNumbers = formData.cpf.replace(/\D/g, '');
-      if (cpfNumbers.length !== 11) {
-        newErrors.cpf = 'CPF deve ter 11 dígitos';
-      }
-    }
-
-    // Phone validation
-    const phoneNumbers = formData.phone.replace(/\D/g, '');
-    if (phoneNumbers.length < 10) {
-      newErrors.phone = 'Telefone deve ter pelo menos 10 dígitos';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleDateSelect = (date: Date | undefined) => {
+    setBirthDate(date);
+    setFormData(prev => ({
+      ...prev,
+      birthDate: date ? format(date, 'yyyy-MM-dd') : ''
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      return;
-    }
-
-    onSave({
+    const leadData = {
       ...formData,
       carModel: formData.carModel || undefined,
-      carPlate: formData.carPlate || undefined
-    });
-  };
+      carPlate: formData.carPlate || undefined,
+    };
 
-  const handleClose = () => {
-    setFormData({
-      name: '',
-      phone: '',
-      email: '',
-      address: '',
-      birthDate: '',
-      cpf: '',
-      carModel: '',
-      carPlate: ''
-    });
-    setErrors({});
+    onSave(leadData);
     onClose();
   };
 
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 10) {
-      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    } else {
-      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    }
-  };
-
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">
-            {editingLead ? 'Editar Lead' : 'Adicionar Novo Lead'}
+          <DialogTitle>
+            {editingLead ? 'Editar Lead' : 'Novo Lead'}
           </DialogTitle>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nome */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome Completo *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Nome completo do lead"
-                className={errors.name ? 'border-red-500' : ''}
-              />
-              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-            </div>
+          {/* Informações Pessoais */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Informações Pessoais</h3>
             
-            {/* Telefone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone *</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
-                placeholder="(11) 99999-9999"
-                className={errors.phone ? 'border-red-500' : ''}
-              />
-              {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Nome Completo *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Digite o nome completo"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="cpf">CPF *</Label>
+                <Input
+                  id="cpf"
+                  name="cpf"
+                  value={formData.cpf}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="000.000.000-00"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="birthDate">Data de Nascimento</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !birthDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {birthDate ? format(birthDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={birthDate}
+                      onSelect={handleDateSelect}
+                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+
+          {/* Contato */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Contato</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="phone">Telefone *</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="email@exemplo.com"
+                />
+              </div>
             </div>
 
-            {/* Email */}
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@exemplo.com"
-                className={errors.email ? 'border-red-500' : ''}
-              />
-              {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-            </div>
-
-            {/* Endereço */}
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="address">Endereço *</Label>
-              <Input
+            <div>
+              <Label htmlFor="address">Endereço Completo</Label>
+              <Textarea
                 id="address"
+                name="address"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Rua, número, bairro, cidade - UF"
-                className={errors.address ? 'border-red-500' : ''}
-              />
-              {errors.address && <p className="text-red-500 text-sm">{errors.address}</p>}
-            </div>
-
-            {/* Data de Nascimento */}
-            <div className="space-y-2">
-              <Label htmlFor="birthDate">Data de Nascimento</Label>
-              <Input
-                id="birthDate"
-                type="date"
-                value={formData.birthDate}
-                onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-              />
-            </div>
-
-            {/* CPF */}
-            <div className="space-y-2">
-              <Label htmlFor="cpf">CPF *</Label>
-              <Input
-                id="cpf"
-                value={formData.cpf}
-                onChange={(e) => setFormData({ ...formData, cpf: formatCPF(e.target.value) })}
-                placeholder="000.000.000-00"
-                className={errors.cpf ? 'border-red-500' : ''}
-              />
-              {errors.cpf && <p className="text-red-500 text-sm">{errors.cpf}</p>}
-            </div>
-
-            {/* Modelo do Carro */}
-            <div className="space-y-2">
-              <Label htmlFor="carModel">Modelo do Carro</Label>
-              <Input
-                id="carModel"
-                value={formData.carModel}
-                onChange={(e) => setFormData({ ...formData, carModel: e.target.value })}
-                placeholder="Ex: Honda Civic 2020"
-              />
-            </div>
-
-            {/* Placa do Carro */}
-            <div className="space-y-2">
-              <Label htmlFor="carPlate">Placa do Carro</Label>
-              <Input
-                id="carPlate"
-                value={formData.carPlate}
-                onChange={(e) => setFormData({ ...formData, carPlate: e.target.value.toUpperCase() })}
-                placeholder="ABC-1234"
+                onChange={handleInputChange}
+                placeholder="Rua, número, bairro, cidade, CEP"
+                rows={3}
               />
             </div>
           </div>
 
+          {/* Veículo */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Veículo (Opcional)</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="carModel">Modelo do Veículo</Label>
+                <Input
+                  id="carModel"
+                  name="carModel"
+                  value={formData.carModel}
+                  onChange={handleInputChange}
+                  placeholder="Ex: Honda Civic 2020"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="carPlate">Placa do Veículo</Label>
+                <Input
+                  id="carPlate"
+                  name="carPlate"
+                  value={formData.carPlate}
+                  onChange={handleInputChange}
+                  placeholder="ABC-1234"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
           <div className="flex justify-end space-x-3 pt-6 border-t">
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
-              {editingLead ? 'Salvar Alterações' : 'Adicionar Lead'}
+            <Button type="submit">
+              {editingLead ? 'Salvar Alterações' : 'Criar Lead'}
             </Button>
           </div>
         </form>

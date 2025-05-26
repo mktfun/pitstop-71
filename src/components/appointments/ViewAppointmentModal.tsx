@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User, Phone, Mail, Car, Calendar, Edit, Trash2, MapPin } from 'lucide-react';
+import { Clock, User, Phone, Mail, Car, Calendar, Edit, Trash2, MapPin, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Appointment } from '@/pages/Appointments';
@@ -21,6 +21,7 @@ interface ViewAppointmentModalProps {
   lead: Lead | null;
   onEdit: (appointment: Appointment) => void;
   onDelete: (appointmentId: string) => void;
+  onMarkAttendance?: (appointmentId: string) => void;
 }
 
 const ViewAppointmentModal = ({ 
@@ -29,7 +30,8 @@ const ViewAppointmentModal = ({
   appointment, 
   lead, 
   onEdit, 
-  onDelete 
+  onDelete,
+  onMarkAttendance
 }: ViewAppointmentModalProps) => {
   if (!appointment) return null;
 
@@ -42,6 +44,12 @@ const ViewAppointmentModal = ({
 
   const handleDelete = () => {
     onDelete(appointment.id);
+  };
+
+  const handleMarkAttendance = () => {
+    if (onMarkAttendance && !appointment.attended) {
+      onMarkAttendance(appointment.id);
+    }
   };
 
   return (
@@ -65,9 +73,17 @@ const ViewAppointmentModal = ({
                   <p className="text-lg font-bold text-primary">{appointment.time}</p>
                 </div>
               </div>
-              <Badge variant="secondary" className="text-sm">
-                {appointment.serviceType}
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="text-sm">
+                  {appointment.serviceType}
+                </Badge>
+                {appointment.attended && (
+                  <Badge variant="default" className="text-sm bg-green-500">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Compareceu
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {appointment.notes && (
@@ -139,14 +155,27 @@ const ViewAppointmentModal = ({
 
           {/* Action Buttons */}
           <div className="flex justify-between pt-6 border-t">
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              className="flex items-center space-x-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              <span>Excluir</span>
-            </Button>
+            <div className="flex space-x-3">
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                className="flex items-center space-x-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Excluir</span>
+              </Button>
+
+              {onMarkAttendance && !appointment.attended && (
+                <Button
+                  variant="default"
+                  onClick={handleMarkAttendance}
+                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Marcar Comparecimento</span>
+                </Button>
+              )}
+            </div>
 
             <div className="flex space-x-3">
               <Button variant="outline" onClick={onClose}>

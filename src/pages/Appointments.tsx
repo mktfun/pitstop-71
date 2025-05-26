@@ -20,6 +20,7 @@ export interface Appointment {
   serviceType: string;
   notes: string;
   createdAt: string;
+  attended?: boolean;
 }
 
 type ViewMode = 'day' | 'week' | 'month';
@@ -61,46 +62,57 @@ const Appointments = () => {
     localStorage.setItem('pitstop_appointments', JSON.stringify(newAppointments));
   };
 
-  const updateLeadStatus = (leadId: string) => {
-    try {
-      // Find the "Agendado" column
-      const storedColumns = localStorage.getItem('pitstop_kanban_columns');
-      if (!storedColumns) return;
-
-      const columns = JSON.parse(storedColumns);
-      const agendadoColumn = columns.find((col: any) => 
-        col.name.toLowerCase().includes('agendado') || 
-        col.name.toLowerCase().includes('agendamento')
-      );
-
-      if (!agendadoColumn) {
-        console.log('Coluna "Agendado" não encontrada');
-        return;
+  const addLeadHistoryEntry = (leadId: string, type: string, description: string) => {
+    const updatedLeads = leads.map(lead => {
+      if (lead.id === leadId) {
+        const historyEntry = {
+          timestamp: new Date().toISOString(),
+          type,
+          description
+        };
+        return {
+          ...lead,
+          history: [historyEntry, ...lead.history]
+        };
       }
+      return lead;
+    });
+    setLeads(updatedLeads);
+    localStorage.setItem('pitstop_leads', JSON.stringify(updatedLeads));
+  };
 
-      // Update lead's column
-      const updatedLeads = leads.map(lead => 
-        lead.id === leadId 
-          ? { ...lead, columnId: agendadoColumn.id }
-          : lead
-      );
+  const updateLeadStatus = (leadId: string, newColumnId: string) => {
+    const updatedLeads = leads.map(lead => 
+      lead.id === leadId 
+        ? { ...lead, columnId: newColumnId }
+        : lead
+    );
 
-      setLeads(updatedLeads);
-      localStorage.setItem('pitstop_leads', JSON.stringify(updatedLeads));
-    } catch (error) {
-      console.error('Error updating lead status:', error);
-    }
+    setLeads(updatedLeads);
+    localStorage.setItem('pitstop_leads', JSON.stringify(updatedLeads));
   };
 
   const handleAddAppointment = (appointmentData: Omit<Appointment, 'id' | 'createdAt'>) => {
     const newAppointment: Appointment = {
       ...appointmentData,
       id: `appointment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      attended: false
     };
 
     saveAppointments([...appointments, newAppointment]);
-    updateLeadStatus(appointmentData.leadId);
+    
+    // Update lead status to scheduled (col-scheduled)
+    updateLeadStatus(appointmentData.leadId, 'col-scheduled');
+    
+    // Add history entry
+    const formattedDate = format(new Date(appointmentData.date), 'dd/MM/yyyy', { locale: ptBR });
+    addLeadHistoryEntry(
+      appointmentData.leadId, 
+      'Agendamento Criado', 
+      `Agendado para ${formattedDate} ${appointmentData.time} - Serviço: ${appointmentData.serviceType}`
+    );
+    
     setIsAddModalOpen(false);
   };
 
@@ -114,16 +126,62 @@ const Appointments = () => {
     );
 
     saveAppointments(updatedAppointments);
+    
+    // Add history entry for edit
+    const formattedDate = format(new Date(appointmentData.date), 'dd/MM/yyyy', { locale: ptBR });
+    addLeadHistoryEntry(
+      appointmentData.leadId, 
+      'Agendamento Editado', 
+      `Agendamento atualizado para ${formattedDate} ${appointmentData.time} - Serviço: ${appointmentData.serviceType}`
+    );
+    
     setEditingAppointment(null);
     setIsViewModalOpen(false);
   };
 
   const handleDeleteAppointment = (appointmentId: string) => {
     if (window.confirm('Tem certeza que deseja excluir este agendamento?')) {
-      const updatedAppointments = appointments.filter(appointment => appointment.id !== appointmentId);
-      saveAppointments(updatedAppointments);
+      const appointmentToDelete = appointments.find(app => app.id === appointmentId);
+      if (appointmentToDelete) {
+        const updatedAppointments = appointments.filter(appointment => appointment.id !== appointmentId);
+        saveAppointments(updatedAppointments);
+        
+        // Add history entry for deletion
+        const formattedDate = format(new Date(appointmentToDelete.date), 'dd/MM/yyyy', { locale: ptBR });
+        addLeadHistoryEntry(
+          appointmentToDelete.leadId, 
+          'Agendamento Excluído', 
+          `Agendamento de ${formattedDate} ${appointmentToDelete.time} excluído`
+        );
+      }
       setIsViewModalOpen(false);
     }
+  };
+
+  const handleMarkAttendance = (appointmentId: string) => {
+    const appointment = appointments.find(app => app.id === appointmentId);
+    if (!appointment) return;
+
+    // Update appointment as attended
+    const updatedAppointments = appointments.map(app =>
+      app.id === appointmentId
+        ? { ...app, attended: true }
+        : app
+    );
+    saveAppointments(updatedAppointments);
+
+    // Update lead status to attended (col-in-service)
+    updateLeadStatus(appointment.leadId, 'col-in-service');
+    
+    // Add history entry
+    const formattedDate = format(new Date(appointment.date), 'dd/MM/yyyy', { locale: ptBR });
+    addLeadHistoryEntry(
+      appointment.leadId, 
+      'Comparecimento Registrado', 
+      `Cliente compareceu ao agendamento de ${formattedDate} ${appointment.time}`
+    );
+    
+    setIsViewModalOpen(false);
   };
 
   const handleViewAppointment = (appointment: Appointment) => {
@@ -321,6 +379,7 @@ const Appointments = () => {
         lead={selectedAppointment ? leads.find(lead => lead.id === selectedAppointment.leadId) : null}
         onEdit={handleEditClick}
         onDelete={handleDeleteAppointment}
+        onMarkAttendance={handleMarkAttendance}
       />
     </div>
   );
