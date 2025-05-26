@@ -3,10 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Settings, User, Calendar, TrendingUp } from 'lucide-react';
-import { format, isToday, isThisMonth, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { format, isToday, isThisMonth, startOfMonth, endOfMonth, parseISO, subMonths, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import KPICard from '@/components/dashboard/KPICard';
-import RevenueChart from '@/components/dashboard/RevenueChart';
+import InteractiveRevenueChart from '@/components/dashboard/InteractiveRevenueChart';
 import AppointmentsTable from '@/components/dashboard/AppointmentsTable';
 
 interface ServiceOrder {
@@ -41,18 +41,15 @@ interface Appointment {
   serviceType: string;
 }
 
-interface RevenueData {
-  mes: string;
-  valor: number;
-}
+export type PeriodFilter = 'last6months' | 'thisyear' | 'lastyear' | 'all';
 
 const Dashboard = () => {
   const [openOSCount, setOpenOSCount] = useState<number>(0);
   const [newLeadsCount, setNewLeadsCount] = useState<number>(0);
   const [todayAppointmentsCount, setTodayAppointmentsCount] = useState<number>(0);
   const [currentMonthRevenue, setCurrentMonthRevenue] = useState<number>(0);
-  const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodFilter>('last6months');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -118,10 +115,6 @@ const Dashboard = () => {
       }, 0);
       setCurrentMonthRevenue(monthRevenue);
 
-      // Generate Revenue Data for Chart (last 6 months)
-      const monthlyRevenue = generateMonthlyRevenueData(serviceOrders);
-      setRevenueData(monthlyRevenue);
-
       // Load Upcoming Appointments (next 5)
       const upcoming = getUpcomingAppointments(appointments);
       setUpcomingAppointments(upcoming);
@@ -129,38 +122,6 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
-  };
-
-  const generateMonthlyRevenueData = (serviceOrders: ServiceOrder[]): RevenueData[] => {
-    const completedStatuses = ['Concluída', 'Paga', 'Fechado/Ganho'];
-    const monthlyData: { [key: string]: number } = {};
-    
-    // Initialize last 6 months
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const monthKey = format(date, 'MMM/yy', { locale: ptBR });
-      monthlyData[monthKey] = 0;
-    }
-
-    // Aggregate revenue by month
-    serviceOrders.forEach(os => {
-      if (!completedStatuses.includes(os.status)) return;
-      
-      try {
-        const completionDate = parseISO(os.completedAt || os.createdAt);
-        const monthKey = format(completionDate, 'MMM/yy', { locale: ptBR });
-        
-        if (monthlyData.hasOwnProperty(monthKey)) {
-          const osRevenue = os.services.reduce((total, service) => total + service.cost, 0);
-          monthlyData[monthKey] += osRevenue;
-        }
-      } catch (error) {
-        console.error('Error processing OS date:', error);
-      }
-    });
-
-    return Object.entries(monthlyData).map(([mes, valor]) => ({ mes, valor }));
   };
 
   const getUpcomingAppointments = (appointments: Appointment[]): Appointment[] => {
@@ -203,47 +164,59 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <KPICard
-          title="O.S. Abertas"
-          value={openOSCount.toString()}
-          icon={Settings}
-          linkTo="/ordens-servico"
-          linkText="Ver Ordens"
-        />
-        <KPICard
-          title="Novos Leads"
-          value={newLeadsCount.toString()}
-          icon={User}
-          linkTo="/leads"
-          linkText="Ver Leads"
-          description="Este mês"
-        />
-        <KPICard
-          title="Agendamentos Hoje"
-          value={todayAppointmentsCount.toString()}
-          icon={Calendar}
-          linkTo="/agendamentos"
-          linkText="Ver Agenda"
-        />
-        <KPICard
-          title="Faturamento"
-          value={`R$ ${currentMonthRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-          icon={TrendingUp}
-          description="Este mês"
-        />
-      </div>
-
-      {/* Charts and Tables Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Revenue Chart - Takes 2 columns on large screens */}
-        <div className="lg:col-span-2">
-          <RevenueChart data={revenueData} />
+      {/* Bento Grid Layout */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:gap-6">
+        {/* KPI Cards - Row 1 */}
+        <div className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-2">
+          <KPICard
+            title="O.S. Abertas"
+            value={openOSCount.toString()}
+            icon={Settings}
+            linkTo="/ordens-servico"
+            linkText="Ver Ordens"
+          />
+        </div>
+        
+        <div className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-2">
+          <KPICard
+            title="Novos Leads"
+            value={newLeadsCount.toString()}
+            icon={User}
+            linkTo="/leads"
+            linkText="Ver Leads"
+            description="Este mês"
+          />
+        </div>
+        
+        <div className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-2">
+          <KPICard
+            title="Agendamentos Hoje"
+            value={todayAppointmentsCount.toString()}
+            icon={Calendar}
+            linkTo="/agendamentos"
+            linkText="Ver Agenda"
+          />
+        </div>
+        
+        <div className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-2">
+          <KPICard
+            title="Faturamento"
+            value={`R$ ${currentMonthRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+            icon={TrendingUp}
+            description="Este mês"
+          />
         </div>
 
-        {/* Appointments Table - Takes 1 column on large screens */}
-        <div className="lg:col-span-1">
+        {/* Interactive Revenue Chart - Main Feature */}
+        <div className="col-span-1 md:col-span-3 lg:col-span-4 xl:col-span-5 row-span-2">
+          <InteractiveRevenueChart 
+            selectedPeriod={selectedPeriod}
+            onPeriodChange={setSelectedPeriod}
+          />
+        </div>
+
+        {/* Appointments Table - Sidebar */}
+        <div className="col-span-1 md:col-span-1 lg:col-span-2 xl:col-span-3 row-span-2">
           <AppointmentsTable appointments={upcomingAppointments} />
         </div>
       </div>

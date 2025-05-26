@@ -16,26 +16,33 @@ interface KPICardProps {
 
 const KPICard = ({ title, value, icon: Icon, linkTo, linkText, description }: KPICardProps) => {
   return (
-    <Card className="bg-card/95 backdrop-blur-sm hover:shadow-md transition-shadow duration-200">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="bg-card/95 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-sm ring-1 ring-border/50 h-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-foreground">{value}</div>
+      <CardContent className="space-y-3">
+        <div className="text-2xl font-bold text-foreground tracking-tight">{value}</div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         )}
         {linkTo && linkText && (
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className="mt-3 h-auto p-0 text-xs font-medium text-primary hover:text-primary/80"
+            className="h-auto p-0 text-xs font-medium text-primary hover:text-primary/80 hover:bg-transparent"
           >
-            <Link to={linkTo}>{linkText}</Link>
+            <Link to={linkTo} className="inline-flex items-center gap-1">
+              {linkText}
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </Button>
         )}
       </CardContent>
