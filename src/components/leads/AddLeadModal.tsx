@@ -111,7 +111,9 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
   };
 
   const handleUnitChange = (value: string) => {
-    setFormData(prev => ({ ...prev, unitId: value }));
+    // Convert "none" back to empty string for storage
+    const unitId = value === 'none' ? '' : value;
+    setFormData(prev => ({ ...prev, unitId }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -197,12 +199,12 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
 
               <div>
                 <Label htmlFor="unitId">Unidade Associada</Label>
-                <Select value={formData.unitId} onValueChange={handleUnitChange}>
+                <Select value={formData.unitId || 'none'} onValueChange={handleUnitChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="-- Nenhuma --" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-- Nenhuma --</SelectItem>
+                    <SelectItem value="none">-- Nenhuma --</SelectItem>
                     {units.map((unit) => (
                       <SelectItem key={unit.id} value={unit.id}>
                         {unit.name}
