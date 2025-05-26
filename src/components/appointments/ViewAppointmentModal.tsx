@@ -8,10 +8,10 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User, Phone, Mail, Car, Calendar, Edit, Trash2, MapPin, CheckCircle } from 'lucide-react';
+import { Clock, User, Phone, Mail, Car, Calendar, Edit, Trash2, MapPin, CheckCircle, Building } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Appointment } from '@/pages/Appointments';
+import { Appointment, Unit } from '@/pages/Appointments';
 import { Lead } from '@/pages/Leads';
 
 interface ViewAppointmentModalProps {
@@ -19,6 +19,7 @@ interface ViewAppointmentModalProps {
   onClose: () => void;
   appointment: Appointment | null;
   lead: Lead | null;
+  unit: Unit | null;
   onEdit: (appointment: Appointment) => void;
   onDelete: (appointmentId: string) => void;
   onMarkAttendance?: (appointmentId: string) => void;
@@ -29,6 +30,7 @@ const ViewAppointmentModal = ({
   onClose, 
   appointment, 
   lead, 
+  unit,
   onEdit, 
   onDelete,
   onMarkAttendance
@@ -84,6 +86,29 @@ const ViewAppointmentModal = ({
                   </Badge>
                 )}
               </div>
+            </div>
+
+            {/* Unit Info */}
+            <div className="pt-3 border-t border-border">
+              <div className="flex items-center space-x-2 mb-2">
+                <Building className="h-4 w-4 text-green-500" />
+                <span className="text-sm font-medium text-muted-foreground">Unidade:</span>
+              </div>
+              {unit ? (
+                <div className="bg-background border border-border rounded-md p-3 space-y-1">
+                  <p className="font-medium text-foreground">{unit.name}</p>
+                  <p className="text-sm text-muted-foreground flex items-center">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    {unit.address}
+                  </p>
+                  <p className="text-sm text-muted-foreground flex items-center">
+                    <Phone className="h-3 w-3 mr-1" />
+                    {unit.phone}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-red-500 italic">Unidade Removida</p>
+              )}
             </div>
 
             {appointment.notes && (

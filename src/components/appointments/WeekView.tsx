@@ -2,17 +2,18 @@
 import React from 'react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Appointment } from '@/pages/Appointments';
+import { Appointment, Unit } from '@/pages/Appointments';
 import { Lead } from '@/pages/Leads';
 
 interface WeekViewProps {
   appointments: Appointment[];
   leads: Lead[];
+  units: Unit[];
   currentDate: Date;
   onAppointmentClick: (appointment: Appointment) => void;
 }
 
-const WeekView = ({ appointments, leads, currentDate, onAppointmentClick }: WeekViewProps) => {
+const WeekView = ({ appointments, leads, units, currentDate, onAppointmentClick }: WeekViewProps) => {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   
@@ -24,6 +25,10 @@ const WeekView = ({ appointments, leads, currentDate, onAppointmentClick }: Week
 
   const getLeadById = (leadId: string) => {
     return leads.find(lead => lead.id === leadId);
+  };
+
+  const getUnitById = (unitId: string) => {
+    return units.find(unit => unit.id === unitId);
   };
 
   const getAppointmentsForDay = (date: Date) => {
@@ -69,6 +74,7 @@ const WeekView = ({ appointments, leads, currentDate, onAppointmentClick }: Week
           {weekDays.map((day, dayIndex) => {
             const appointment = getAppointmentForTimeSlot(day, timeSlot);
             const lead = appointment ? getLeadById(appointment.leadId) : null;
+            const unit = appointment ? getUnitById(appointment.unitId) : null;
             
             return (
               <div key={dayIndex} className="border-r border-border p-2 relative">
@@ -77,11 +83,14 @@ const WeekView = ({ appointments, leads, currentDate, onAppointmentClick }: Week
                     onClick={() => onAppointmentClick(appointment)}
                     className="bg-primary/10 border border-primary/20 rounded-md p-2 cursor-pointer hover:bg-primary/20 transition-colors h-full"
                   >
-                    <div className="text-xs font-medium text-primary mb-1">
+                    <div className="text-xs font-medium text-primary mb-1 truncate">
                       {lead?.name || 'Lead não encontrado'}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
                       {appointment.serviceType}
+                    </div>
+                    <div className="text-xs text-green-600 truncate mt-1">
+                      @ {unit?.name || 'Unidade Removida'}
                     </div>
                     {lead?.carModel && (
                       <div className="text-xs text-muted-foreground truncate mt-1">

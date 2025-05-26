@@ -3,22 +3,27 @@ import React, { useState } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
-import { Clock, User } from 'lucide-react';
-import { Appointment } from '@/pages/Appointments';
+import { Clock, User, MapPin } from 'lucide-react';
+import { Appointment, Unit } from '@/pages/Appointments';
 import { Lead } from '@/pages/Leads';
 
 interface MonthViewProps {
   appointments: Appointment[];
   leads: Lead[];
+  units: Unit[];
   currentDate: Date;
   onAppointmentClick: (appointment: Appointment) => void;
 }
 
-const MonthView = ({ appointments, leads, currentDate, onAppointmentClick }: MonthViewProps) => {
+const MonthView = ({ appointments, leads, units, currentDate, onAppointmentClick }: MonthViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(currentDate);
 
   const getLeadById = (leadId: string) => {
     return leads.find(lead => lead.id === leadId);
+  };
+
+  const getUnitById = (unitId: string) => {
+    return units.find(unit => unit.id === unitId);
   };
 
   const getAppointmentsForDate = (date: Date) => {
@@ -89,6 +94,7 @@ const MonthView = ({ appointments, leads, currentDate, onAppointmentClick }: Mon
             <div className="space-y-3">
               {selectedDateAppointments.map((appointment) => {
                 const lead = getLeadById(appointment.leadId);
+                const unit = getUnitById(appointment.unitId);
                 
                 return (
                   <div
@@ -108,6 +114,13 @@ const MonthView = ({ appointments, leads, currentDate, onAppointmentClick }: Mon
                             <User className="h-4 w-4 text-blue-500" />
                             <span className="font-medium text-foreground">
                               {lead?.name || 'Lead não encontrado'}
+                            </span>
+                          </div>
+                          <div className="h-4 w-px bg-border" />
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="h-4 w-4 text-green-500" />
+                            <span className="text-sm text-foreground">
+                              {unit?.name || 'Unidade Removida'}
                             </span>
                           </div>
                         </div>

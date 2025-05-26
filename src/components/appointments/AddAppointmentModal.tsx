@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Appointment } from '@/pages/Appointments';
+import { Appointment, Unit } from '@/pages/Appointments';
 import { Lead } from '@/pages/Leads';
 
 interface AddAppointmentModalProps {
@@ -25,6 +25,7 @@ interface AddAppointmentModalProps {
   onClose: () => void;
   onSave: (appointmentData: Omit<Appointment, 'id' | 'createdAt'>) => void;
   leads: Lead[];
+  units: Unit[];
   editingAppointment?: Appointment | null;
 }
 
@@ -41,9 +42,10 @@ const serviceTypes = [
   'Outros'
 ];
 
-const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointment }: AddAppointmentModalProps) => {
+const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, units, editingAppointment }: AddAppointmentModalProps) => {
   const [formData, setFormData] = useState({
     leadId: '',
+    unitId: '',
     date: '',
     time: '',
     serviceType: '',
@@ -56,6 +58,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
     if (editingAppointment) {
       setFormData({
         leadId: editingAppointment.leadId,
+        unitId: editingAppointment.unitId,
         date: editingAppointment.date,
         time: editingAppointment.time,
         serviceType: editingAppointment.serviceType,
@@ -64,6 +67,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
     } else {
       setFormData({
         leadId: '',
+        unitId: '',
         date: '',
         time: '',
         serviceType: '',
@@ -78,6 +82,10 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
 
     if (!formData.leadId) {
       newErrors.leadId = 'Selecione um lead';
+    }
+
+    if (!formData.unitId) {
+      newErrors.unitId = 'Selecione uma unidade';
     }
 
     if (!formData.date) {
@@ -109,6 +117,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
   const handleClose = () => {
     setFormData({
       leadId: '',
+      unitId: '',
       date: '',
       time: '',
       serviceType: '',
@@ -122,7 +131,16 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
     return leads.find(lead => lead.id === formData.leadId);
   };
 
+  const getSelectedUnit = () => {
+    return units.find(unit => unit.id === formData.unitId);
+  };
+
   const selectedLead = getSelectedLead();
+  const selectedUnit = getSelectedUnit();
+
+  // Check if units are available
+  const isUnitsAvailable = units.length > 0;
+  const isFormDisabled = !isUnitsAvailable;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -133,11 +151,24 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
           </DialogTitle>
         </DialogHeader>
         
+        {!isUnitsAvailable && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <p className="text-red-800 text-sm">
+              Cadastre unidades nas Configurações antes de criar agendamentos.{' '}
+              <a href="/configuracoes" className="underline font-medium">Ir para Configurações</a>
+            </p>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Lead Selection */}
           <div className="space-y-2">
             <Label htmlFor="leadId">Cliente *</Label>
-            <Select value={formData.leadId} onValueChange={(value) => setFormData({ ...formData, leadId: value })}>
+            <Select 
+              value={formData.leadId} 
+              onValueChange={(value) => setFormData({ ...formData, leadId: value })}
+              disabled={isFormDisabled}
+            >
               <SelectTrigger className={errors.leadId ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Selecione um cliente" />
               </SelectTrigger>
@@ -170,6 +201,40 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
             )}
           </div>
 
+          {/* Unit Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="unitId">Unidade do Agendamento *</Label>
+            <Select 
+              value={formData.unitId} 
+              onValueChange={(value) => setFormData({ ...formData, unitId: value })}
+              disabled={isFormDisabled}
+            >
+              <SelectTrigger className={errors.unitId ? 'border-red-500' : ''}>
+                <SelectValue placeholder="-- Selecione a Unidade --" />
+              </SelectTrigger>
+              <SelectContent>
+                {units.map((unit) => (
+                  <SelectItem key={unit.id} value={unit.id}>
+                    {unit.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.unitId && <p className="text-red-500 text-sm">{errors.unitId}</p>}
+            
+            {/* Unit info preview */}
+            {selectedUnit && (
+              <div className="bg-muted/50 rounded-md p-3 space-y-1">
+                <div className="text-sm">
+                  <span className="font-medium">Endereço:</span> {selectedUnit.address}
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">Telefone:</span> {selectedUnit.phone}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Date */}
             <div className="space-y-2">
@@ -180,6 +245,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 className={errors.date ? 'border-red-500' : ''}
+                disabled={isFormDisabled}
               />
               {errors.date && <p className="text-red-500 text-sm">{errors.date}</p>}
             </div>
@@ -193,6 +259,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                 className={errors.time ? 'border-red-500' : ''}
+                disabled={isFormDisabled}
               />
               {errors.time && <p className="text-red-500 text-sm">{errors.time}</p>}
             </div>
@@ -201,7 +268,11 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
           {/* Service Type */}
           <div className="space-y-2">
             <Label htmlFor="serviceType">Tipo de Serviço *</Label>
-            <Select value={formData.serviceType} onValueChange={(value) => setFormData({ ...formData, serviceType: value })}>
+            <Select 
+              value={formData.serviceType} 
+              onValueChange={(value) => setFormData({ ...formData, serviceType: value })}
+              disabled={isFormDisabled}
+            >
               <SelectTrigger className={errors.serviceType ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Selecione o tipo de serviço" />
               </SelectTrigger>
@@ -225,6 +296,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Observações adicionais sobre o agendamento"
               rows={3}
+              disabled={isFormDisabled}
             />
           </div>
 
@@ -232,7 +304,11 @@ const AddAppointmentModal = ({ isOpen, onClose, onSave, leads, editingAppointmen
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
+            <Button 
+              type="submit" 
+              className="bg-primary hover:bg-primary/90"
+              disabled={isFormDisabled}
+            >
               {editingAppointment ? 'Salvar Alterações' : 'Criar Agendamento'}
             </Button>
           </div>

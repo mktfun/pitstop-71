@@ -15,12 +15,22 @@ import { updateLeadStatus, addLeadHistoryEntry, KANBAN_COLUMNS, HISTORY_TYPES } 
 export interface Appointment {
   id: string;
   leadId: string;
+  unitId: string;
   date: string;
   time: string;
   serviceType: string;
   notes: string;
   createdAt: string;
   attended?: boolean;
+}
+
+export interface Unit {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  createdAt: string;
 }
 
 type ViewMode = 'day' | 'week' | 'month';
@@ -30,6 +40,7 @@ const Appointments = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -51,6 +62,12 @@ const Appointments = () => {
       const storedLeads = localStorage.getItem('pitstop_leads');
       if (storedLeads) {
         setLeads(JSON.parse(storedLeads));
+      }
+
+      // Load units
+      const storedUnits = localStorage.getItem('pitstop_units');
+      if (storedUnits) {
+        setUnits(JSON.parse(storedUnits));
       }
     } catch (error) {
       console.error('Error loading appointments data:', error);
@@ -241,7 +258,7 @@ const Appointments = () => {
         <Button 
           onClick={() => setIsAddModalOpen(true)} 
           className="bg-primary hover:bg-primary/90"
-          disabled={leads.length === 0}
+          disabled={leads.length === 0 || units.length === 0}
         >
           <Plus className="h-4 w-4 mr-2" />
           Novo Agendamento
@@ -254,6 +271,16 @@ const Appointments = () => {
           <p className="text-yellow-800 text-sm">
             Você precisa ter pelo menos um lead cadastrado para criar agendamentos.{' '}
             <a href="/leads" className="underline font-medium">Cadastre um lead primeiro</a>.
+          </p>
+        </div>
+      )}
+
+      {/* No units warning */}
+      {units.length === 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800 text-sm">
+            Você precisa ter pelo menos uma unidade cadastrada para criar agendamentos.{' '}
+            <a href="/configuracoes" className="underline font-medium">Cadastre unidades nas Configurações</a>.
           </p>
         </div>
       )}
@@ -310,6 +337,7 @@ const Appointments = () => {
           <DayView
             appointments={getFilteredAppointments()}
             leads={leads}
+            units={units}
             onAppointmentClick={handleViewAppointment}
           />
         )}
@@ -317,6 +345,7 @@ const Appointments = () => {
           <WeekView
             appointments={getFilteredAppointments()}
             leads={leads}
+            units={units}
             currentDate={currentDate}
             onAppointmentClick={handleViewAppointment}
           />
@@ -325,6 +354,7 @@ const Appointments = () => {
           <MonthView
             appointments={getFilteredAppointments()}
             leads={leads}
+            units={units}
             currentDate={currentDate}
             onAppointmentClick={handleViewAppointment}
           />
@@ -340,6 +370,7 @@ const Appointments = () => {
         }}
         onSave={editingAppointment ? handleEditAppointment : handleAddAppointment}
         leads={leads}
+        units={units}
         editingAppointment={editingAppointment}
       />
 
@@ -352,6 +383,7 @@ const Appointments = () => {
         }}
         appointment={selectedAppointment}
         lead={selectedAppointment ? leads.find(lead => lead.id === selectedAppointment.leadId) : null}
+        unit={selectedAppointment ? units.find(unit => unit.id === selectedAppointment.unitId) : null}
         onEdit={handleEditClick}
         onDelete={handleDeleteAppointment}
         onMarkAttendance={handleMarkAttendance}
