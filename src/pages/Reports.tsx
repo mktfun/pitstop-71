@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, TrendingUp, Users, Clock, DollarSign, Target } from 'react-feather';
+import { Calendar, TrendingUp, Users, Clock, DollarSign, Target, MapPin } from 'react-feather';
 import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LeadsPerformanceModule from '@/components/reports/LeadsPerformanceModule';
@@ -20,6 +20,7 @@ export interface Lead {
   name: string;
   columnId: string;
   createdAt: string;
+  unitId: string;
   history: Array<{
     timestamp: string;
     type: string;
@@ -33,6 +34,7 @@ export interface Appointment {
   date: string;
   time: string;
   serviceType: string;
+  unitId: string;
   createdAt: string;
 }
 
@@ -47,8 +49,17 @@ export interface ServiceOrder {
   completedAt?: string;
 }
 
+export interface Unit {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
 const Reports = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>('30');
+  const [selectedUnitId, setSelectedUnitId] = useState<string>('');
   const [customDateRange, setCustomDateRange] = useState<DateRange | null>(null);
 
   // Calcular período baseado na seleção
@@ -74,48 +85,68 @@ const Reports = () => {
   }, [selectedPeriod, customDateRange]);
 
   // Carregar dados do localStorage
-  const { leads, appointments, serviceOrders } = useMemo(() => {
+  const { leads, appointments, serviceOrders, units } = useMemo(() => {
     try {
       const leadsData: Lead[] = JSON.parse(localStorage.getItem('pitstop_leads') || '[]');
       const appointmentsData: Appointment[] = JSON.parse(localStorage.getItem('pitstop_appointments') || '[]');
       const osData: ServiceOrder[] = JSON.parse(localStorage.getItem('pitstop_os') || '[]');
+      const unitsData: Unit[] = JSON.parse(localStorage.getItem('pitstop_units') || '[]');
 
       return {
         leads: leadsData,
         appointments: appointmentsData,
-        serviceOrders: osData
+        serviceOrders: osData,
+        units: unitsData
       };
     } catch (error) {
       console.error('Erro ao carregar dados do localStorage:', error);
-      return { leads: [], appointments: [], serviceOrders: [] };
+      return { leads: [], appointments: [], serviceOrders: [], units: [] };
     }
   }, []);
 
-  // Filtrar dados pelo período selecionado
+  // Filtrar dados pelo período selecionado E pela unidade selecionada
   const filteredData = useMemo(() => {
     const interval = { start: dateRange.from, end: dateRange.to };
     
-    const filteredLeads = leads.filter(lead => {
+    // Passo 1: Filtrar por período
+    const filteredLeadsByPeriod = leads.filter(lead => {
       const createdDate = new Date(lead.createdAt);
       return isWithinInterval(createdDate, interval);
     });
 
-    const filteredAppointments = appointments.filter(appointment => {
+    const filteredAppointmentsByPeriod = appointments.filter(appointment => {
       const appointmentDate = new Date(appointment.date);
       return isWithinInterval(appointmentDate, interval);
     });
 
-    const filteredServiceOrders = serviceOrders.filter(os => {
+    const filteredServiceOrdersByPeriod = serviceOrders.filter(os => {
       const createdDate = new Date(os.createdAt);
       return isWithinInterval(createdDate, interval);
     });
+
+    // Passo 2: Filtrar por unidade (se selecionada)
+    const filteredLeads = selectedUnitId !== '' 
+      ? filteredLeadsByPeriod.filter(lead => lead.unitId === selectedUnitId)
+      : filteredLeadsByPeriod;
+
+    const filteredAppointments = selectedUnitId !== ''
+      ? filteredAppointmentsByPeriod.filter(appointment => appointment.unitId === selectedUnitId)
+      : filteredAppointmentsByPeriod;
+
+    // Para service orders, filtrar baseado no unitId do lead associado
+    const filteredServiceOrders = selectedUnitId !== ''
+      ? filteredServiceOrdersByPeriod.filter(os => {
+          const associatedLead = leads.find(lead => lead.id === os.leadId);
+          return associatedLead && associatedLead.unitId === selectedUnitId;
+        })
+      : filteredServiceOrdersByPeriod;
 
     return {
       leads: filteredLeads,
       appointments: filteredAppointments,
       serviceOrders: filteredServiceOrders
     };
-  }, [leads, appointments, serviceOrders, dateRange]);
+  }, [leads, appointments, serviceOrders, dateRange, selectedUnitId]);
 
   // KPIs gerais
   const generalKPIs = useMemo(() => {
@@ -143,6 +174,13 @@ const Reports = () => {
     'custom': 'Período customizado'
   };
 
+  // Buscar nome da unidade selecionada
+  const selectedUnitName = useMemo(() => {
+    if (selectedUnitId === '') return 'Todas as Unidades';
+    const unit = units.find(u => u.id === selectedUnitId);
+    return unit ? unit.name : 'Unidade não encontrada';
+  }, [selectedUnitId, units]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 space-y-8">
       {/* Header Refinado */}
@@ -152,25 +190,49 @@ const Reports = () => {
             Relatórios
           </h1>
           <p className="text-slate-600 font-medium">
-            Análise completa do desempenho · {format(dateRange.from, 'dd/MM/yyyy', { locale: ptBR })} até {format(dateRange.to, 'dd/MM/yyyy', { locale: ptBR })}
+            Análise completa do desempenho · {format(dateRange.from, 'dd/MM/yyyy', { locale: ptBR })} até {format(dateRange.to, 'dd/MM/yyyy', { locale: ptBR })} · {selectedUnitName}
           </p>
         </div>
 
-        {/* Filtro de Período Refinado */}
-        <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl px-6 py-3 shadow-lg shadow-slate-900/5">
-          <Calendar className="h-5 w-5 text-slate-500" />
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-48 border-0 bg-transparent focus:ring-0 font-medium">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(periodLabels).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Filtros Refinados */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl px-6 py-3 shadow-lg shadow-slate-900/5">
+          {/* Filtro de Período */}
+          <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-slate-500" />
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <SelectTrigger className="w-48 border-0 bg-transparent focus:ring-0 font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(periodLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Separador */}
+          <div className="h-6 w-px bg-slate-300 hidden sm:block" />
+
+          {/* Filtro de Unidade */}
+          <div className="flex items-center gap-3">
+            <MapPin className="h-5 w-5 text-slate-500" />
+            <Select value={selectedUnitId} onValueChange={setSelectedUnitId}>
+              <SelectTrigger className="w-48 border-0 bg-transparent focus:ring-0 font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todas as Unidades</SelectItem>
+                {units.map(unit => (
+                  <SelectItem key={unit.id} value={unit.id}>
+                    {unit.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 

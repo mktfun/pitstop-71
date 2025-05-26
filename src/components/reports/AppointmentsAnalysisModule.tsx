@@ -17,7 +17,7 @@ interface AppointmentsAnalysisModuleProps {
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 const AppointmentsAnalysisModule = ({ appointments, leads, dateRange }: AppointmentsAnalysisModuleProps) => {
-  // KPIs de agendamentos
+  // KPIs de agendamentos - usa os appointments já filtrados
   const kpis = useMemo(() => {
     const totalAppointments = appointments.length;
     
@@ -42,7 +42,7 @@ const AppointmentsAnalysisModule = ({ appointments, leads, dateRange }: Appointm
     };
   }, [appointments, leads]);
 
-  // Distribuição por tipo de serviço
+  // Distribuição por tipo de serviço - usa os appointments já filtrados
   const serviceTypeData = useMemo(() => {
     const serviceCount: Record<string, number> = {};
     
@@ -57,7 +57,7 @@ const AppointmentsAnalysisModule = ({ appointments, leads, dateRange }: Appointm
     }));
   }, [appointments]);
 
-  // Agendamentos por dia
+  // Agendamentos por dia - usa os appointments já filtrados
   const dailyAppointments = useMemo(() => {
     const interval = { start: dateRange.from, end: dateRange.to };
     const days = eachDayOfInterval(interval);

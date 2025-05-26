@@ -27,7 +27,7 @@ const KANBAN_STAGES = [
 ];
 
 const LeadsPerformanceModule = ({ leads, allLeads, dateRange }: LeadsPerformanceModuleProps) => {
-  // Dados do funil
+  // Dados do funil - usa os leads já filtrados que vêm como prop
   const funnelData = useMemo(() => {
     const stageCount: Record<string, number> = {};
     
@@ -54,7 +54,7 @@ const LeadsPerformanceModule = ({ leads, allLeads, dateRange }: LeadsPerformance
     ].filter(item => item.value > 0);
   }, [leads]);
 
-  // KPIs calculados
+  // KPIs calculados - usa os leads já filtrados
   const kpis = useMemo(() => {
     const totalLeads = leads.length;
     const closedLeads = leads.filter(lead => lead.columnId === 'col-closed').length;

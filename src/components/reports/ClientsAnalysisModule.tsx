@@ -22,7 +22,7 @@ interface ClientAnalysis {
 }
 
 const ClientsAnalysisModule = ({ serviceOrders, appointments, leads, dateRange }: ClientsAnalysisModuleProps) => {
-  // Análise de clientes
+  // Análise de clientes - usa os serviceOrders e appointments já filtrados
   const clientsAnalysis = useMemo(() => {
     const clientMap = new Map<string, ClientAnalysis>();
 
