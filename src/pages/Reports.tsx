@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -314,10 +313,10 @@ const Reports = () => {
         </div>
       </div>
 
-      {/* Bento Grid Layout Refinado */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-16 gap-6 auto-rows-fr">
-        {/* Desempenho de Leads - Bloco Principal */}
-        <div className="lg:col-span-8 xl:col-span-10 lg:row-span-2">
+      {/* Bento Grid Layout Refinado - Aumentando o card de Leads */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Desempenho de Leads - Bloco Principal Expandido */}
+        <div className="lg:col-span-12 xl:col-span-8">
           <LeadsPerformanceModule 
             leads={filteredData.leads}
             allLeads={leads}
@@ -325,18 +324,17 @@ const Reports = () => {
           />
         </div>
 
-        {/* Análise de Agendamentos - Bloco Vertical */}
-        <div className="lg:col-span-4 xl:col-span-6 lg:row-span-1">
+        {/* Cards Laterais */}
+        <div className="lg:col-span-12 xl:col-span-4 space-y-6">
+          {/* Análise de Agendamentos */}
           <AppointmentsAnalysisModule 
             appointments={filteredData.appointments}
             leads={leads}
             dateRange={dateRange}
           />
-        </div>
 
-        {/* Resumo de Ordens de Serviço - Novo Card */}
-        <div className="lg:col-span-4 xl:col-span-6 lg:row-span-1">
-          <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5 h-full">
+          {/* Resumo de Ordens de Serviço */}
+          <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 rounded-2xl shadow-lg">
@@ -397,7 +395,7 @@ const Reports = () => {
         </div>
 
         {/* Análise de Clientes - Bloco Horizontal */}
-        <div className="lg:col-span-12 xl:col-span-16">
+        <div className="lg:col-span-12">
           <ClientsAnalysisModule 
             serviceOrders={filteredData.serviceOrders}
             appointments={filteredData.appointments}
