@@ -1,8 +1,6 @@
-
 import React, { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { useSortable } from '@dnd-kit/sortable';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Edit, Trash2, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
