@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -143,21 +144,23 @@ const Reports = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Relatórios</h1>
-          <p className="text-gray-600 mt-1">
-            Análise completa do desempenho - {format(dateRange.from, 'dd/MM/yyyy', { locale: ptBR })} até {format(dateRange.to, 'dd/MM/yyyy', { locale: ptBR })}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 space-y-8">
+      {/* Header Refinado */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+            Relatórios
+          </h1>
+          <p className="text-slate-600 font-medium">
+            Análise completa do desempenho · {format(dateRange.from, 'dd/MM/yyyy', { locale: ptBR })} até {format(dateRange.to, 'dd/MM/yyyy', { locale: ptBR })}
           </p>
         </div>
 
-        {/* Filtro de Período */}
-        <div className="flex items-center gap-3">
-          <Calendar className="h-5 w-5 text-gray-500" />
+        {/* Filtro de Período Refinado */}
+        <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl px-6 py-3 shadow-lg shadow-slate-900/5">
+          <Calendar className="h-5 w-5 text-slate-500" />
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-48 border-0 bg-transparent focus:ring-0 font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -171,66 +174,66 @@ const Reports = () => {
         </div>
       </div>
 
-      {/* KPIs Gerais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-600 text-sm font-medium">Total de Leads</p>
-                <p className="text-3xl font-bold text-blue-900">{generalKPIs.totalLeads}</p>
-              </div>
-              <Users className="h-8 w-8 text-blue-600" />
+      {/* KPIs Gerais Refinados */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/60 rounded-2xl p-6 shadow-lg shadow-blue-900/5">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <p className="text-blue-700 text-sm font-semibold tracking-wide">TOTAL DE LEADS</p>
+              <p className="text-3xl font-bold text-blue-900">{generalKPIs.totalLeads}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="bg-blue-100 p-3 rounded-xl">
+              <Users className="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-600 text-sm font-medium">Agendamentos</p>
-                <p className="text-3xl font-bold text-green-900">{generalKPIs.totalAppointments}</p>
-              </div>
-              <Clock className="h-8 w-8 text-green-600" />
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200/60 rounded-2xl p-6 shadow-lg shadow-emerald-900/5">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <p className="text-emerald-700 text-sm font-semibold tracking-wide">AGENDAMENTOS</p>
+              <p className="text-3xl font-bold text-emerald-900">{generalKPIs.totalAppointments}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="bg-emerald-100 p-3 rounded-xl">
+              <Clock className="h-6 w-6 text-emerald-600" />
+            </div>
+          </div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-600 text-sm font-medium">OSs Concluídas</p>
-                <p className="text-3xl font-bold text-purple-900">{generalKPIs.completedOrders}</p>
-              </div>
-              <Target className="h-8 w-8 text-purple-600" />
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 border border-purple-200/60 rounded-2xl p-6 shadow-lg shadow-purple-900/5">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <p className="text-purple-700 text-sm font-semibold tracking-wide">OSS CONCLUÍDAS</p>
+              <p className="text-3xl font-bold text-purple-900">{generalKPIs.completedOrders}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="bg-purple-100 p-3 rounded-xl">
+              <Target className="h-6 w-6 text-purple-600" />
+            </div>
+          </div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-600 text-sm font-medium">Faturamento</p>
-                <p className="text-3xl font-bold text-orange-900">
-                  {generalKPIs.totalRevenue.toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  })}
-                </p>
-              </div>
-              <DollarSign className="h-8 w-8 text-orange-600" />
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200/60 rounded-2xl p-6 shadow-lg shadow-amber-900/5">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <p className="text-amber-700 text-sm font-semibold tracking-wide">FATURAMENTO</p>
+              <p className="text-3xl font-bold text-amber-900">
+                {generalKPIs.totalRevenue.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                })}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="bg-amber-100 p-3 rounded-xl">
+              <DollarSign className="h-6 w-6 text-amber-600" />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Desempenho de Leads - ocupa 2/3 da largura */}
-        <div className="lg:col-span-8">
+      {/* Bento Grid Layout Refinado */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-16 gap-6 auto-rows-fr">
+        {/* Desempenho de Leads - Bloco Principal */}
+        <div className="lg:col-span-8 xl:col-span-10 lg:row-span-2">
           <LeadsPerformanceModule 
             leads={filteredData.leads}
             allLeads={leads}
@@ -238,8 +241,8 @@ const Reports = () => {
           />
         </div>
 
-        {/* Análise de Agendamentos - ocupa 1/3 da largura */}
-        <div className="lg:col-span-4">
+        {/* Análise de Agendamentos - Bloco Vertical */}
+        <div className="lg:col-span-4 xl:col-span-6 lg:row-span-1">
           <AppointmentsAnalysisModule 
             appointments={filteredData.appointments}
             leads={leads}
@@ -247,8 +250,8 @@ const Reports = () => {
           />
         </div>
 
-        {/* Análise de Clientes - largura total */}
-        <div className="lg:col-span-12">
+        {/* Análise de Clientes - Bloco Horizontal */}
+        <div className="lg:col-span-12 xl:col-span-16">
           <ClientsAnalysisModule 
             serviceOrders={filteredData.serviceOrders}
             appointments={filteredData.appointments}

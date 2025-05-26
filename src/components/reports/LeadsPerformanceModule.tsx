@@ -92,86 +92,99 @@ const LeadsPerformanceModule = ({ leads, allLeads, dateRange }: LeadsPerformance
   }, [leads, allLeads]);
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-blue-600" />
-          Desempenho de Leads
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-900">Taxa de Conversão</span>
+    <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5 h-full">
+      <div className="p-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-2xl shadow-lg">
+            <TrendingUp className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Desempenho de Leads</h2>
+            <p className="text-slate-600">Análise do funil de conversão</p>
+          </div>
+        </div>
+
+        {/* KPIs Refinados */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/40 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <Users className="h-4 w-4 text-blue-600" />
+              </div>
+              <span className="text-sm font-semibold text-blue-900 uppercase tracking-wide">Taxa de Conversão</span>
             </div>
-            <p className="text-2xl font-bold text-blue-900 mt-1">
+            <p className="text-3xl font-bold text-blue-900">
               {kpis.conversionRate.toFixed(1)}%
             </p>
           </div>
 
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium text-green-900">Leads Fechados</span>
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200/40 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-emerald-100 p-2 rounded-lg">
+                <Target className="h-4 w-4 text-emerald-600" />
+              </div>
+              <span className="text-sm font-semibold text-emerald-900 uppercase tracking-wide">Leads Fechados</span>
             </div>
-            <p className="text-2xl font-bold text-green-900 mt-1">
+            <p className="text-3xl font-bold text-emerald-900">
               {kpis.closedLeads}
             </p>
           </div>
 
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-orange-600" />
-              <span className="text-sm font-medium text-orange-900">Tempo Médio</span>
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200/40 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-amber-100 p-2 rounded-lg">
+                <Clock className="h-4 w-4 text-amber-600" />
+              </div>
+              <span className="text-sm font-semibold text-amber-900 uppercase tracking-wide">Tempo Médio</span>
             </div>
-            <p className="text-2xl font-bold text-orange-900 mt-1">
+            <p className="text-3xl font-bold text-amber-900">
               {kpis.avgTimeToClose} dias
             </p>
           </div>
         </div>
 
-        {/* Gráfico de Funil */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Funil de Conversão</h3>
+        {/* Gráfico de Funil Refinado */}
+        <div className="space-y-6">
+          <h3 className="text-xl font-bold text-slate-900">Funil de Conversão</h3>
           {funnelData.length > 0 ? (
-            <ChartContainer
-              config={{
-                value: {
-                  label: "Leads",
-                  color: "hsl(var(--chart-1))",
-                },
-              }}
-              className="h-64"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <FunnelChart>
-                  <Funnel
-                    dataKey="value"
-                    data={funnelData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                  >
-                    <LabelList position="center" fill="#fff" stroke="none" />
-                  </Funnel>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                </FunnelChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            <div className="bg-gradient-to-br from-slate-50 to-white border border-slate-200/40 rounded-2xl p-6">
+              <ChartContainer
+                config={{
+                  value: {
+                    label: "Leads",
+                    color: "hsl(var(--chart-1))",
+                  },
+                }}
+                className="h-64"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <FunnelChart>
+                    <Funnel
+                      dataKey="value"
+                      data={funnelData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                    >
+                      <LabelList position="center" fill="#fff" stroke="none" fontSize={12} fontWeight="bold" />
+                    </Funnel>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                  </FunnelChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
           ) : (
-            <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-              <p className="text-gray-500">Nenhum dado disponível para o período selecionado</p>
+            <div className="h-64 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-white border border-slate-200/40 rounded-2xl">
+              <TrendingUp className="h-12 w-12 text-slate-400 mb-3" />
+              <p className="text-slate-500 font-medium">Nenhum dado disponível para o período selecionado</p>
             </div>
           )}
         </div>
 
-        {/* Distribuição por Estágio */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Distribuição por Estágio</h3>
-          <div className="space-y-2">
+        {/* Distribuição por Estágio Refinada */}
+        <div className="mt-8">
+          <h3 className="text-xl font-bold text-slate-900 mb-6">Distribuição por Estágio</h3>
+          <div className="space-y-3">
             {KANBAN_STAGES.map(stage => {
               const count = leads.filter(lead => lead.columnId === stage.id).length;
               const percentage = kpis.totalLeads > 0 ? (count / kpis.totalLeads) * 100 : 0;
@@ -179,17 +192,17 @@ const LeadsPerformanceModule = ({ leads, allLeads, dateRange }: LeadsPerformance
               if (count === 0) return null;
               
               return (
-                <div key={stage.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                  <div className="flex items-center gap-2">
+                <div key={stage.id} className="flex items-center justify-between p-4 bg-white/50 backdrop-blur-sm border border-slate-200/40 rounded-xl hover:bg-white/80 transition-all duration-200">
+                  <div className="flex items-center gap-3">
                     <div 
-                      className="w-3 h-3 rounded-full"
+                      className="w-4 h-4 rounded-full shadow-sm"
                       style={{ backgroundColor: stage.color }}
                     />
-                    <span className="text-sm font-medium">{stage.name}</span>
+                    <span className="font-semibold text-slate-900">{stage.name}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">{count} leads</span>
-                    <span className="text-sm font-medium text-gray-900">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-slate-600 font-medium">{count} leads</span>
+                    <span className="text-lg font-bold text-slate-900 min-w-[60px] text-right">
                       {percentage.toFixed(1)}%
                     </span>
                   </div>
@@ -198,8 +211,8 @@ const LeadsPerformanceModule = ({ leads, allLeads, dateRange }: LeadsPerformance
             })}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

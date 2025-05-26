@@ -89,32 +89,40 @@ const ClientsAnalysisModule = ({ serviceOrders, appointments, leads, dateRange }
   const topClients = clientsAnalysis.slice(0, 5);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-purple-600" />
-          Análise de Clientes
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-purple-600" />
-              <span className="text-sm font-medium text-purple-900">Clientes Ativos</span>
+    <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5">
+      <div className="p-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-2xl shadow-lg">
+            <Users className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Análise de Clientes</h2>
+            <p className="text-slate-600">Performance e fidelização</p>
+          </div>
+        </div>
+
+        {/* KPIs Refinados */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 border border-purple-200/40 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-purple-100 p-2 rounded-lg">
+                <Users className="h-4 w-4 text-purple-600" />
+              </div>
+              <span className="text-sm font-semibold text-purple-900 uppercase tracking-wide">Clientes Ativos</span>
             </div>
-            <p className="text-2xl font-bold text-purple-900 mt-1">
+            <p className="text-3xl font-bold text-purple-900">
               {kpis.activeClients}
             </p>
           </div>
 
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium text-green-900">Faturamento Total</span>
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200/40 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-emerald-100 p-2 rounded-lg">
+                <DollarSign className="h-4 w-4 text-emerald-600" />
+              </div>
+              <span className="text-sm font-semibold text-emerald-900 uppercase tracking-wide">Faturamento</span>
             </div>
-            <p className="text-2xl font-bold text-green-900 mt-1">
+            <p className="text-2xl font-bold text-emerald-900">
               {kpis.totalRevenue.toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
@@ -122,12 +130,14 @@ const ClientsAnalysisModule = ({ serviceOrders, appointments, leads, dateRange }
             </p>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-900">Ticket Médio</span>
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/40 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+              </div>
+              <span className="text-sm font-semibold text-blue-900 uppercase tracking-wide">Ticket Médio</span>
             </div>
-            <p className="text-2xl font-bold text-blue-900 mt-1">
+            <p className="text-2xl font-bold text-blue-900">
               {kpis.avgRevenuePerClient.toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
@@ -135,96 +145,100 @@ const ClientsAnalysisModule = ({ serviceOrders, appointments, leads, dateRange }
             </p>
           </div>
 
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-orange-600" />
-              <span className="text-sm font-medium text-orange-900">Taxa de Recorrência</span>
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200/40 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-amber-100 p-2 rounded-lg">
+                <Star className="h-4 w-4 text-amber-600" />
+              </div>
+              <span className="text-sm font-semibold text-amber-900 uppercase tracking-wide">Recorrência</span>
             </div>
-            <p className="text-2xl font-bold text-orange-900 mt-1">
+            <p className="text-3xl font-bold text-amber-900">
               {kpis.recurrenceRate.toFixed(1)}%
             </p>
           </div>
         </div>
 
-        {/* Top Clientes */}
+        {/* Top Clientes Refinado */}
         {topClients.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Top 5 Clientes por Faturamento</h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[40px]">#</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead className="text-center">OSs</TableHead>
-                  <TableHead className="text-center">Agendamentos</TableHead>
-                  <TableHead className="text-right">Faturamento</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topClients.map((client, index) => (
-                  <TableRow key={client.leadId}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                          index === 0 ? 'bg-yellow-500' : 
-                          index === 1 ? 'bg-gray-400' : 
-                          index === 2 ? 'bg-orange-600' : 'bg-blue-500'
-                        }`}>
-                          {index + 1}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-gray-900">{client.name}</p>
-                        <p className="text-sm text-gray-500">
-                          {client.completedOrders > 1 ? 'Cliente recorrente' : 'Primeiro atendimento'}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {client.completedOrders}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {client.appointmentsCount}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {client.totalRevenue.toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
-                      })}
-                    </TableCell>
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-slate-900 mb-6">Top 5 Clientes por Faturamento</h3>
+            <div className="bg-gradient-to-br from-slate-50 to-white border border-slate-200/40 rounded-2xl overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-slate-200/60">
+                    <TableHead className="w-[60px] font-bold text-slate-700">#</TableHead>
+                    <TableHead className="font-bold text-slate-700">Cliente</TableHead>
+                    <TableHead className="text-center font-bold text-slate-700">OSs</TableHead>
+                    <TableHead className="text-center font-bold text-slate-700">Agendamentos</TableHead>
+                    <TableHead className="text-right font-bold text-slate-700">Faturamento</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {topClients.map((client, index) => (
+                    <TableRow key={client.leadId} className="border-slate-200/40 hover:bg-slate-50/50">
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg ${
+                            index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-500' : 
+                            index === 1 ? 'bg-gradient-to-br from-gray-400 to-gray-500' : 
+                            index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-500' : 'bg-gradient-to-br from-blue-400 to-blue-500'
+                          }`}>
+                            {index + 1}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-semibold text-slate-900">{client.name}</p>
+                          <p className="text-sm text-slate-500">
+                            {client.completedOrders > 1 ? 'Cliente recorrente' : 'Primeiro atendimento'}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                          {client.completedOrders}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
+                          {client.appointmentsCount}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-slate-900">
+                        {client.totalRevenue.toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL'
+                        })}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
 
-        {/* Estatísticas adicionais */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Estatísticas adicionais refinadas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Distribuição de Clientes</h3>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium">Primeira vez</span>
-                <span className="text-sm text-gray-600">
+            <h3 className="text-xl font-bold text-slate-900 mb-4">Distribuição de Clientes</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white border border-slate-200/40 rounded-xl">
+                <span className="font-semibold text-slate-900">Primeira vez</span>
+                <span className="text-slate-600 font-medium">
                   {clientsAnalysis.filter(c => c.completedOrders === 1).length} clientes
                 </span>
               </div>
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium">2-3 atendimentos</span>
-                <span className="text-sm text-gray-600">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white border border-slate-200/40 rounded-xl">
+                <span className="font-semibold text-slate-900">2-3 atendimentos</span>
+                <span className="text-slate-600 font-medium">
                   {clientsAnalysis.filter(c => c.completedOrders >= 2 && c.completedOrders <= 3).length} clientes
                 </span>
               </div>
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium">4+ atendimentos</span>
-                <span className="text-sm text-gray-600">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white border border-slate-200/40 rounded-xl">
+                <span className="font-semibold text-slate-900">4+ atendimentos</span>
+                <span className="text-slate-600 font-medium">
                   {clientsAnalysis.filter(c => c.completedOrders >= 4).length} clientes
                 </span>
               </div>
@@ -232,23 +246,23 @@ const ClientsAnalysisModule = ({ serviceOrders, appointments, leads, dateRange }
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Faixas de Faturamento</h3>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium">Até R$ 500</span>
-                <span className="text-sm text-gray-600">
+            <h3 className="text-xl font-bold text-slate-900 mb-4">Faixas de Faturamento</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white border border-slate-200/40 rounded-xl">
+                <span className="font-semibold text-slate-900">Até R$ 500</span>
+                <span className="text-slate-600 font-medium">
                   {clientsAnalysis.filter(c => c.totalRevenue <= 500).length} clientes
                 </span>
               </div>
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium">R$ 501 - R$ 1.500</span>
-                <span className="text-sm text-gray-600">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white border border-slate-200/40 rounded-xl">
+                <span className="font-semibold text-slate-900">R$ 501 - R$ 1.500</span>
+                <span className="text-slate-600 font-medium">
                   {clientsAnalysis.filter(c => c.totalRevenue > 500 && c.totalRevenue <= 1500).length} clientes
                 </span>
               </div>
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium">Acima de R$ 1.500</span>
-                <span className="text-sm text-gray-600">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white border border-slate-200/40 rounded-xl">
+                <span className="font-semibold text-slate-900">Acima de R$ 1.500</span>
+                <span className="text-slate-600 font-medium">
                   {clientsAnalysis.filter(c => c.totalRevenue > 1500).length} clientes
                 </span>
               </div>
@@ -257,13 +271,13 @@ const ClientsAnalysisModule = ({ serviceOrders, appointments, leads, dateRange }
         </div>
 
         {clientsAnalysis.length === 0 && (
-          <div className="text-center py-8">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-500">Nenhum cliente com ordens de serviço concluídas no período</p>
+          <div className="text-center py-12">
+            <Users className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+            <p className="text-slate-500 font-medium text-lg">Nenhum cliente com ordens de serviço concluídas no período</p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
