@@ -3,58 +3,66 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useNavigate } from 'react-router-dom';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface Appointment {
   id: string;
-  data: string;
-  hora: string;
-  cliente: string;
-  servico: string;
-  veiculo?: string;
+  leadId: string;
+  date: string;
+  time: string;
+  serviceType: string;
 }
 
 interface AppointmentsTableProps {
   appointments: Appointment[];
 }
 
+interface Lead {
+  id: string;
+  name: string;
+}
+
 const AppointmentsTable = ({ appointments }: AppointmentsTableProps) => {
-  const [sortField, setSortField] = useState<keyof Appointment>('data');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [leads, setLeads] = useState<Lead[]>([]);
   const navigate = useNavigate();
 
-  const handleSort = (field: keyof Appointment) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
+  React.useEffect(() => {
+    // Load leads for name lookup
+    try {
+      const leadsData = localStorage.getItem('pitstop_leads');
+      if (leadsData) {
+        setLeads(JSON.parse(leadsData));
+      }
+    } catch (error) {
+      console.error('Error loading leads:', error);
     }
+  }, []);
+
+  const getClientName = (leadId: string): string => {
+    const lead = leads.find(l => l.id === leadId);
+    return lead ? lead.name : 'Cliente não encontrado';
   };
 
-  const sortedAppointments = [...appointments].sort((a, b) => {
-    const aValue = a[sortField];
-    const bValue = b[sortField];
-    
-    if (sortField === 'data') {
-      const dateA = new Date(aValue as string);
-      const dateB = new Date(bValue as string);
-      return sortDirection === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
-    }
-    
-    const comparison = (aValue as string).localeCompare(bValue as string);
-    return sortDirection === 'asc' ? comparison : -comparison;
-  });
-
   const handleRowClick = (appointmentId: string) => {
-    navigate(`/agendamentos/${appointmentId}`);
+    navigate(`/agendamentos`);
   };
 
   const formatDate = (dateString: string) => {
     try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('pt-BR');
+      const date = parseISO(dateString);
+      return format(date, 'dd/MM/yyyy', { locale: ptBR });
     } catch {
-      return dateString;
+      return '-';
+    }
+  };
+
+  const formatTime = (timeString: string) => {
+    try {
+      // Assume time is in HH:MM format
+      return timeString || '-';
+    } catch {
+      return '-';
     }
   };
 
@@ -73,46 +81,26 @@ const AppointmentsTable = ({ appointments }: AppointmentsTableProps) => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead 
-                    className="cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => handleSort('data')}
-                  >
-                    Data
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => handleSort('hora')}
-                  >
-                    Hora
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => handleSort('cliente')}
-                  >
-                    Cliente
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => handleSort('servico')}
-                  >
-                    Serviço
-                  </TableHead>
+                  <TableHead className="text-xs">Data</TableHead>
+                  <TableHead className="text-xs">Hora</TableHead>
+                  <TableHead className="text-xs">Cliente</TableHead>
+                  <TableHead className="text-xs">Serviço</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedAppointments.slice(0, 5).map((appointment) => (
+                {appointments.map((appointment) => (
                   <TableRow 
                     key={appointment.id}
                     className="cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => handleRowClick(appointment.id)}
                   >
-                    <TableCell className="font-medium">
-                      {formatDate(appointment.data)}
+                    <TableCell className="font-medium text-sm">
+                      {formatDate(appointment.date)}
                     </TableCell>
-                    <TableCell>{appointment.hora}</TableCell>
-                    <TableCell>{appointment.cliente}</TableCell>
-                    <TableCell className="truncate max-w-32">
-                      {appointment.servico}
+                    <TableCell className="text-sm">{formatTime(appointment.time)}</TableCell>
+                    <TableCell className="text-sm">{getClientName(appointment.leadId)}</TableCell>
+                    <TableCell className="text-sm truncate max-w-32">
+                      {appointment.serviceType}
                     </TableCell>
                   </TableRow>
                 ))}
