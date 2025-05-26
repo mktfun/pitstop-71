@@ -1,7 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Settings, User, Calendar, TrendingUp } from 'lucide-react';
 import { format, isToday, isThisMonth, startOfMonth, endOfMonth, parseISO, subMonths, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -156,7 +154,6 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <SidebarTrigger className="md:hidden" />
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground">Visão geral da Oficina</p>
