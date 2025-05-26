@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, X, Car, FileText, Wrench } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -24,9 +23,16 @@ interface CreateServiceOrderModalProps {
   }) => void;
 }
 
+interface FormData {
+  leadId: string;
+  vehicleInfo: string;
+  reportedIssues: string;
+  status: string;
+}
+
 const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrderModalProps) => {
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     leadId: '',
     vehicleInfo: '',
     reportedIssues: '',
