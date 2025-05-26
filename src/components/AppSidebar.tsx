@@ -43,7 +43,7 @@ const AppSidebar = () => {
     localStorage.removeItem('userEmail');
     window.location.href = '/';
   };
-  return <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-lg transition-all duration-300 ease-in-out mx-[16px] px-0">
+  return <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-lg transition-all duration-300 ease-in-out px-0 mx-0">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center justify-between p-4">
           {!isCollapsed && <h2 className="text-lg font-bold text-sidebar-foreground">
