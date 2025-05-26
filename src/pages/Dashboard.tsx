@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import KPICard from '@/components/dashboard/KPICard';
@@ -8,6 +9,41 @@ import PermissionsTestComponent from '@/components/PermissionsTestComponent';
 import { Users, Calendar, DollarSign, CheckCircle } from 'lucide-react';
 
 const Dashboard = () => {
+  // Sample data for RevenueChart
+  const revenueData = [
+    { mes: 'Jan', valor: 12000 },
+    { mes: 'Fev', valor: 15000 },
+    { mes: 'Mar', valor: 18000 },
+    { mes: 'Abr', valor: 14000 },
+    { mes: 'Mai', valor: 16000 },
+    { mes: 'Jun', valor: 20000 },
+  ];
+
+  // Sample appointments data
+  const appointmentsData = [
+    {
+      id: '1',
+      leadId: 'lead1',
+      date: '2024-05-26',
+      time: '09:00',
+      serviceType: 'Manutenção Preventiva'
+    },
+    {
+      id: '2',
+      leadId: 'lead2',
+      date: '2024-05-26',
+      time: '14:00',
+      serviceType: 'Reparo de Freios'
+    },
+    {
+      id: '3',
+      leadId: 'lead3',
+      date: '2024-05-27',
+      time: '10:30',
+      serviceType: 'Troca de Óleo'
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -55,7 +91,7 @@ const Dashboard = () => {
             <CardTitle>Receita</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <RevenueChart />
+            <RevenueChart data={revenueData} />
           </CardContent>
         </Card>
         <Card className="col-span-3">
@@ -66,7 +102,7 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <AppointmentsTable />
+            <AppointmentsTable appointments={appointmentsData} />
           </CardContent>
         </Card>
       </div>
@@ -126,3 +162,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
