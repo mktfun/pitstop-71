@@ -40,7 +40,7 @@ const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrder
     vehicleInfo: '',
     reportedIssues: '',
     status: OS_STATUS.DIAGNOSIS,
-    serviceId: ''
+    serviceId: 'none'
   });
   const [services, setServices] = useState<ServiceOrderService[]>([]);
 
@@ -58,7 +58,7 @@ const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrder
       vehicleInfo: '',
       reportedIssues: '',
       status: OS_STATUS.DIAGNOSIS,
-      serviceId: ''
+      serviceId: 'none'
     });
     setServices([]);
   };
@@ -104,7 +104,7 @@ const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrder
 
     onSave({
       ...formData,
-      serviceId: formData.serviceId || undefined,
+      serviceId: formData.serviceId === 'none' ? undefined : formData.serviceId,
       services
     });
     
@@ -177,7 +177,7 @@ const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrder
                 <SelectValue placeholder="-- Nenhum / Serviço Avulso --" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">-- Nenhum / Serviço Avulso --</SelectItem>
+                <SelectItem value="none">-- Nenhum / Serviço Avulso --</SelectItem>
                 {activeServices.length === 0 ? (
                   <SelectItem value="no-services" disabled>
                     Nenhum serviço ativo encontrado

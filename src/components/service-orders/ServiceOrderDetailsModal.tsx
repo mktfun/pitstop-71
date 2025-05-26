@@ -28,7 +28,10 @@ const ServiceOrderDetailsModal = ({ isOpen, onClose, serviceOrder, onSave, onDel
 
   useEffect(() => {
     if (serviceOrder) {
-      setFormData({ ...serviceOrder });
+      setFormData({ 
+        ...serviceOrder,
+        serviceId: serviceOrder.serviceId || 'none'
+      });
       setLeadName(getLeadName(serviceOrder.leadId));
       setActiveServices(getActiveServices());
     }
@@ -66,7 +69,11 @@ const ServiceOrderDetailsModal = ({ isOpen, onClose, serviceOrder, onSave, onDel
   };
 
   const handleSave = () => {
-    onSave(formData);
+    const updatedOrder = {
+      ...formData,
+      serviceId: formData.serviceId === 'none' ? undefined : formData.serviceId
+    };
+    onSave(updatedOrder);
     setEditMode(false);
   };
 
@@ -177,14 +184,14 @@ const ServiceOrderDetailsModal = ({ isOpen, onClose, serviceOrder, onSave, onDel
             </Label>
             {editMode ? (
               <Select 
-                value={formData.serviceId || ''} 
-                onValueChange={(value) => setFormData({ ...formData, serviceId: value || undefined })}
+                value={formData.serviceId || 'none'} 
+                onValueChange={(value) => setFormData({ ...formData, serviceId: value === 'none' ? undefined : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="-- Nenhum / Serviço Avulso --" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">-- Nenhum / Serviço Avulso --</SelectItem>
+                  <SelectItem value="none">-- Nenhum / Serviço Avulso --</SelectItem>
                   {activeServices.map(service => (
                     <SelectItem key={service.id} value={service.id}>
                       {service.name} - R$ {service.price.toFixed(2)}
@@ -217,7 +224,6 @@ const ServiceOrderDetailsModal = ({ isOpen, onClose, serviceOrder, onSave, onDel
             )}
           </div>
 
-          {/* Problemas Relatados */}
           <div className="space-y-2">
             <Label>Problemas Relatados</Label>
             {editMode ? (
@@ -233,7 +239,6 @@ const ServiceOrderDetailsModal = ({ isOpen, onClose, serviceOrder, onSave, onDel
             )}
           </div>
 
-          {/* Serviços */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="flex items-center space-x-1">
@@ -329,7 +334,6 @@ const ServiceOrderDetailsModal = ({ isOpen, onClose, serviceOrder, onSave, onDel
             )}
           </div>
 
-          {/* Datas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
             <div className="space-y-2">
               <Label className="flex items-center space-x-1">

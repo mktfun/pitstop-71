@@ -1,4 +1,3 @@
-
 import { ServiceOrder, OS_STATUS_TO_COLUMN_MAP } from '@/types/serviceOrder';
 import { Lead } from '@/pages/Leads';
 import { updateLeadStatus, addLeadHistoryEntry, HISTORY_TYPES } from './leadAutomation';
@@ -156,7 +155,7 @@ export const getServiceById = (serviceId: string): Service | null => {
 };
 
 export const getServiceName = (serviceId: string | undefined): string => {
-  if (!serviceId) return '-';
+  if (!serviceId || serviceId === 'none') return '-';
   
   const service = getServiceById(serviceId);
   if (!service) return 'Serviço Removido/Inativo';
