@@ -3,19 +3,31 @@ import React, { useState } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
-import { Clock, User, MapPin } from 'lucide-react';
+import { Clock, User, MapPin, Wrench } from 'lucide-react';
 import { Appointment, Unit } from '@/pages/Appointments';
 import { Lead } from '@/pages/Leads';
+
+interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  estimatedTime?: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface MonthViewProps {
   appointments: Appointment[];
   leads: Lead[];
   units: Unit[];
+  services: Service[];
   currentDate: Date;
   onAppointmentClick: (appointment: Appointment) => void;
 }
 
-const MonthView = ({ appointments, leads, units, currentDate, onAppointmentClick }: MonthViewProps) => {
+const MonthView = ({ appointments, leads, units, services, currentDate, onAppointmentClick }: MonthViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(currentDate);
 
   const getLeadById = (leadId: string) => {
@@ -24,6 +36,19 @@ const MonthView = ({ appointments, leads, units, currentDate, onAppointmentClick
 
   const getUnitById = (unitId: string) => {
     return units.find(unit => unit.id === unitId);
+  };
+
+  const getServiceById = (serviceId: string) => {
+    return services.find(service => service.id === serviceId);
+  };
+
+  const getServiceName = (appointment: Appointment) => {
+    if (appointment.serviceId) {
+      const service = getServiceById(appointment.serviceId);
+      return service ? service.name : 'Serviço Removido/Inativo';
+    }
+    // Legacy fallback
+    return appointment.serviceType || 'Serviço não especificado';
   };
 
   const getAppointmentsForDate = (date: Date) => {
@@ -95,6 +120,7 @@ const MonthView = ({ appointments, leads, units, currentDate, onAppointmentClick
               {selectedDateAppointments.map((appointment) => {
                 const lead = getLeadById(appointment.leadId);
                 const unit = getUnitById(appointment.unitId);
+                const serviceName = getServiceName(appointment);
                 
                 return (
                   <div
@@ -125,8 +151,11 @@ const MonthView = ({ appointments, leads, units, currentDate, onAppointmentClick
                           </div>
                         </div>
                         
-                        <div className="text-sm text-foreground">
-                          <strong>Serviço:</strong> {appointment.serviceType}
+                        <div className="flex items-center space-x-2">
+                          <Wrench className="h-4 w-4 text-purple-500" />
+                          <span className="text-sm text-foreground">
+                            <strong>Serviço:</strong> {serviceName}
+                          </span>
                         </div>
 
                         {appointment.notes && (

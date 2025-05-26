@@ -8,11 +8,22 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User, Phone, Mail, Car, Calendar, Edit, Trash2, MapPin, CheckCircle, Building } from 'lucide-react';
+import { Clock, User, Phone, Mail, Car, Calendar, Edit, Trash2, MapPin, CheckCircle, Building, Wrench, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Appointment, Unit } from '@/pages/Appointments';
 import { Lead } from '@/pages/Leads';
+
+interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  estimatedTime?: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface ViewAppointmentModalProps {
   isOpen: boolean;
@@ -20,6 +31,7 @@ interface ViewAppointmentModalProps {
   appointment: Appointment | null;
   lead: Lead | null;
   unit: Unit | null;
+  service: Service | null;
   onEdit: (appointment: Appointment) => void;
   onDelete: (appointmentId: string) => void;
   onMarkAttendance?: (appointmentId: string) => void;
@@ -31,6 +43,7 @@ const ViewAppointmentModal = ({
   appointment, 
   lead, 
   unit,
+  service,
   onEdit, 
   onDelete,
   onMarkAttendance
@@ -52,6 +65,23 @@ const ViewAppointmentModal = ({
     if (onMarkAttendance && !appointment.attended) {
       onMarkAttendance(appointment.id);
     }
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(price);
+  };
+
+  const getServiceName = () => {
+    if (appointment.serviceId && service) {
+      return service.name;
+    } else if (appointment.serviceId && !service) {
+      return 'Serviço Removido/Inativo';
+    }
+    // Legacy fallback
+    return appointment.serviceType || 'Serviço não especificado';
   };
 
   return (
@@ -76,14 +106,45 @@ const ViewAppointmentModal = ({
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <Badge variant="secondary" className="text-sm">
-                  {appointment.serviceType}
-                </Badge>
                 {appointment.attended && (
                   <Badge variant="default" className="text-sm bg-green-500">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     Compareceu
                   </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Service Info */}
+            <div className="pt-3 border-t border-border">
+              <div className="flex items-center space-x-2 mb-2">
+                <Wrench className="h-4 w-4 text-purple-500" />
+                <span className="text-sm font-medium text-muted-foreground">Serviço:</span>
+              </div>
+              <div className="bg-background border border-border rounded-md p-3 space-y-2">
+                <p className="font-medium text-foreground">{getServiceName()}</p>
+                {service && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground flex items-center">
+                      <DollarSign className="h-3 w-3 mr-1" />
+                      {formatPrice(service.price)}
+                    </p>
+                    {service.estimatedTime && (
+                      <p className="text-sm text-muted-foreground">
+                        Tempo estimado: {service.estimatedTime} min
+                      </p>
+                    )}
+                    {service.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {service.description}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {appointment.serviceId && !service && (
+                  <p className="text-sm text-red-500 italic">
+                    Este serviço foi removido ou está inativo
+                  </p>
                 )}
               </div>
             </div>

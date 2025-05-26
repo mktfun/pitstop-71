@@ -1,17 +1,29 @@
 
 import React from 'react';
-import { Clock, User, Car, MapPin } from 'lucide-react';
+import { Clock, User, Car, MapPin, Wrench } from 'lucide-react';
 import { Appointment, Unit } from '@/pages/Appointments';
 import { Lead } from '@/pages/Leads';
+
+interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  estimatedTime?: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface DayViewProps {
   appointments: Appointment[];
   leads: Lead[];
   units: Unit[];
+  services: Service[];
   onAppointmentClick: (appointment: Appointment) => void;
 }
 
-const DayView = ({ appointments, leads, units, onAppointmentClick }: DayViewProps) => {
+const DayView = ({ appointments, leads, units, services, onAppointmentClick }: DayViewProps) => {
   const sortedAppointments = [...appointments].sort((a, b) => a.time.localeCompare(b.time));
 
   const getLeadById = (leadId: string) => {
@@ -20,6 +32,19 @@ const DayView = ({ appointments, leads, units, onAppointmentClick }: DayViewProp
 
   const getUnitById = (unitId: string) => {
     return units.find(unit => unit.id === unitId);
+  };
+
+  const getServiceById = (serviceId: string) => {
+    return services.find(service => service.id === serviceId);
+  };
+
+  const getServiceName = (appointment: Appointment) => {
+    if (appointment.serviceId) {
+      const service = getServiceById(appointment.serviceId);
+      return service ? service.name : 'Serviço Removido/Inativo';
+    }
+    // Legacy fallback
+    return appointment.serviceType || 'Serviço não especificado';
   };
 
   if (sortedAppointments.length === 0) {
@@ -37,6 +62,7 @@ const DayView = ({ appointments, leads, units, onAppointmentClick }: DayViewProp
       {sortedAppointments.map((appointment) => {
         const lead = getLeadById(appointment.leadId);
         const unit = getUnitById(appointment.unitId);
+        const serviceName = getServiceName(appointment);
         
         return (
           <div
@@ -70,7 +96,10 @@ const DayView = ({ appointments, leads, units, onAppointmentClick }: DayViewProp
                 <div className="flex items-start space-x-6">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Serviço</p>
-                    <p className="font-medium text-foreground">{appointment.serviceType}</p>
+                    <div className="flex items-center space-x-2">
+                      <Wrench className="h-4 w-4 text-purple-500" />
+                      <span className="font-medium text-foreground">{serviceName}</span>
+                    </div>
                   </div>
                   
                   {lead?.carModel && (

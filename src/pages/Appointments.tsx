@@ -18,10 +18,12 @@ export interface Appointment {
   unitId: string;
   date: string;
   time: string;
-  serviceType: string;
+  serviceId: string;
   notes: string;
   createdAt: string;
   attended?: boolean;
+  // Legacy field for backwards compatibility
+  serviceType?: string;
 }
 
 export interface Unit {
@@ -33,6 +35,17 @@ export interface Unit {
   createdAt: string;
 }
 
+interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  estimatedTime?: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 type ViewMode = 'day' | 'week' | 'month';
 
 const Appointments = () => {
@@ -41,6 +54,7 @@ const Appointments = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -69,6 +83,12 @@ const Appointments = () => {
       if (storedUnits) {
         setUnits(JSON.parse(storedUnits));
       }
+
+      // Load services
+      const storedServices = localStorage.getItem('pitstop_services');
+      if (storedServices) {
+        setServices(JSON.parse(storedServices));
+      }
     } catch (error) {
       console.error('Error loading appointments data:', error);
     }
@@ -77,6 +97,11 @@ const Appointments = () => {
   const saveAppointments = (newAppointments: Appointment[]) => {
     setAppointments(newAppointments);
     localStorage.setItem('pitstop_appointments', JSON.stringify(newAppointments));
+  };
+
+  const getServiceNameById = (serviceId: string) => {
+    const service = services.find(s => s.id === serviceId);
+    return service ? service.name : 'Serviço Removido/Inativo';
   };
 
   const handleAddAppointment = (appointmentData: Omit<Appointment, 'id' | 'createdAt'>) => {
@@ -89,16 +114,17 @@ const Appointments = () => {
 
     saveAppointments([...appointments, newAppointment]);
     
-    // Usar função utilitária para atualizar lead
+    // Get service name for history
+    const serviceName = getServiceNameById(appointmentData.serviceId);
     const formattedDate = format(new Date(appointmentData.date), 'dd/MM/yyyy', { locale: ptBR });
+    
     updateLeadStatus({
       leadId: appointmentData.leadId,
       newColumnId: KANBAN_COLUMNS.SCHEDULED,
       historyType: HISTORY_TYPES.APPOINTMENT_CREATED,
-      historyDescription: `Agendado para ${formattedDate} ${appointmentData.time} - Serviço: ${appointmentData.serviceType}`
+      historyDescription: `Agendado para ${formattedDate} ${appointmentData.time} - Serviço: ${serviceName}`
     });
     
-    // Recarregar leads para refletir mudanças
     loadData();
     setIsAddModalOpen(false);
   };
@@ -114,15 +140,16 @@ const Appointments = () => {
 
     saveAppointments(updatedAppointments);
     
-    // Usar função utilitária para adicionar ao histórico
+    // Get service name for history
+    const serviceName = getServiceNameById(appointmentData.serviceId);
     const formattedDate = format(new Date(appointmentData.date), 'dd/MM/yyyy', { locale: ptBR });
+    
     addLeadHistoryEntry(
       appointmentData.leadId,
       HISTORY_TYPES.APPOINTMENT_EDITED,
-      `Agendamento atualizado para ${formattedDate} ${appointmentData.time} - Serviço: ${appointmentData.serviceType}`
+      `Agendamento atualizado para ${formattedDate} ${appointmentData.time} - Serviço: ${serviceName}`
     );
     
-    // Recarregar leads para refletir mudanças
     loadData();
     setEditingAppointment(null);
     setIsViewModalOpen(false);
@@ -135,7 +162,6 @@ const Appointments = () => {
         const updatedAppointments = appointments.filter(appointment => appointment.id !== appointmentId);
         saveAppointments(updatedAppointments);
         
-        // Usar função utilitária para adicionar ao histórico
         const formattedDate = format(new Date(appointmentToDelete.date), 'dd/MM/yyyy', { locale: ptBR });
         addLeadHistoryEntry(
           appointmentToDelete.leadId,
@@ -143,7 +169,6 @@ const Appointments = () => {
           `Agendamento de ${formattedDate} ${appointmentToDelete.time} excluído`
         );
         
-        // Recarregar leads para refletir mudanças
         loadData();
       }
       setIsViewModalOpen(false);
@@ -162,7 +187,6 @@ const Appointments = () => {
     );
     saveAppointments(updatedAppointments);
 
-    // Usar função utilitária para atualizar lead
     const formattedDate = format(new Date(appointment.date), 'dd/MM/yyyy', { locale: ptBR });
     updateLeadStatus({
       leadId: appointment.leadId,
@@ -171,7 +195,6 @@ const Appointments = () => {
       historyDescription: `Cliente compareceu ao agendamento de ${formattedDate} ${appointment.time}`
     });
     
-    // Recarregar leads para refletir mudanças
     loadData();
     setIsViewModalOpen(false);
   };
@@ -244,6 +267,9 @@ const Appointments = () => {
     }
   };
 
+  // Get active services count for validation
+  const activeServicesCount = services.filter(service => service.isActive).length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -258,7 +284,7 @@ const Appointments = () => {
         <Button 
           onClick={() => setIsAddModalOpen(true)} 
           className="bg-primary hover:bg-primary/90"
-          disabled={leads.length === 0 || units.length === 0}
+          disabled={leads.length === 0 || units.length === 0 || activeServicesCount === 0}
         >
           <Plus className="h-4 w-4 mr-2" />
           Novo Agendamento
@@ -281,6 +307,16 @@ const Appointments = () => {
           <p className="text-red-800 text-sm">
             Você precisa ter pelo menos uma unidade cadastrada para criar agendamentos.{' '}
             <a href="/configuracoes" className="underline font-medium">Cadastre unidades nas Configurações</a>.
+          </p>
+        </div>
+      )}
+
+      {/* No services warning */}
+      {activeServicesCount === 0 && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <p className="text-orange-800 text-sm">
+            Você precisa ter pelo menos um serviço ativo cadastrado para criar agendamentos.{' '}
+            <a href="/configuracoes" className="underline font-medium">Cadastre serviços nas Configurações</a>.
           </p>
         </div>
       )}
@@ -338,6 +374,7 @@ const Appointments = () => {
             appointments={getFilteredAppointments()}
             leads={leads}
             units={units}
+            services={services}
             onAppointmentClick={handleViewAppointment}
           />
         )}
@@ -346,6 +383,7 @@ const Appointments = () => {
             appointments={getFilteredAppointments()}
             leads={leads}
             units={units}
+            services={services}
             currentDate={currentDate}
             onAppointmentClick={handleViewAppointment}
           />
@@ -355,6 +393,7 @@ const Appointments = () => {
             appointments={getFilteredAppointments()}
             leads={leads}
             units={units}
+            services={services}
             currentDate={currentDate}
             onAppointmentClick={handleViewAppointment}
           />
@@ -384,6 +423,7 @@ const Appointments = () => {
         appointment={selectedAppointment}
         lead={selectedAppointment ? leads.find(lead => lead.id === selectedAppointment.leadId) : null}
         unit={selectedAppointment ? units.find(unit => unit.id === selectedAppointment.unitId) : null}
+        service={selectedAppointment ? services.find(service => service.id === selectedAppointment.serviceId) : null}
         onEdit={handleEditClick}
         onDelete={handleDeleteAppointment}
         onMarkAttendance={handleMarkAttendance}

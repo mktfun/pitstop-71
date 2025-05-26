@@ -5,15 +5,27 @@ import { ptBR } from 'date-fns/locale';
 import { Appointment, Unit } from '@/pages/Appointments';
 import { Lead } from '@/pages/Leads';
 
+interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  estimatedTime?: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface WeekViewProps {
   appointments: Appointment[];
   leads: Lead[];
   units: Unit[];
+  services: Service[];
   currentDate: Date;
   onAppointmentClick: (appointment: Appointment) => void;
 }
 
-const WeekView = ({ appointments, leads, units, currentDate, onAppointmentClick }: WeekViewProps) => {
+const WeekView = ({ appointments, leads, units, services, currentDate, onAppointmentClick }: WeekViewProps) => {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   
@@ -29,6 +41,19 @@ const WeekView = ({ appointments, leads, units, currentDate, onAppointmentClick 
 
   const getUnitById = (unitId: string) => {
     return units.find(unit => unit.id === unitId);
+  };
+
+  const getServiceById = (serviceId: string) => {
+    return services.find(service => service.id === serviceId);
+  };
+
+  const getServiceName = (appointment: Appointment) => {
+    if (appointment.serviceId) {
+      const service = getServiceById(appointment.serviceId);
+      return service ? service.name : 'Serviço Removido/Inativo';
+    }
+    // Legacy fallback
+    return appointment.serviceType || 'Serviço não especificado';
   };
 
   const getAppointmentsForDay = (date: Date) => {
@@ -75,6 +100,7 @@ const WeekView = ({ appointments, leads, units, currentDate, onAppointmentClick 
             const appointment = getAppointmentForTimeSlot(day, timeSlot);
             const lead = appointment ? getLeadById(appointment.leadId) : null;
             const unit = appointment ? getUnitById(appointment.unitId) : null;
+            const serviceName = appointment ? getServiceName(appointment) : null;
             
             return (
               <div key={dayIndex} className="border-r border-border p-2 relative">
@@ -87,7 +113,7 @@ const WeekView = ({ appointments, leads, units, currentDate, onAppointmentClick 
                       {lead?.name || 'Lead não encontrado'}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {appointment.serviceType}
+                      {serviceName}
                     </div>
                     <div className="text-xs text-green-600 truncate mt-1">
                       @ {unit?.name || 'Unidade Removida'}
