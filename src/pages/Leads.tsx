@@ -119,7 +119,7 @@ const Leads = () => {
             <p className="text-muted-foreground">Gerencie seus leads e oportunidades</p>
           </div>
         </div>
-        <Button onClick={() => setIsAddLeadModalOpen(true)}>
+        <Button onClick={() => setIsAddLeadModalOpen(true)} className="bg-primary hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
           Novo Lead
         </Button>

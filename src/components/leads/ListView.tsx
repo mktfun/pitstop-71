@@ -20,7 +20,7 @@ interface ListViewProps {
   onEditLead?: (lead: Lead) => void;
 }
 
-type SortField = 'name' | 'phone' | 'email' | 'createdAt' | 'status' | 'carModel';
+type SortField = 'name' | 'phone' | 'email' | 'createdAt' | 'status' | 'carModel' | 'cpf';
 type SortOrder = 'asc' | 'desc';
 
 const colorVariants = {
@@ -75,6 +75,10 @@ const ListView = ({ columns, leads, onEditLead }: ListViewProps) => {
           aValue = (a.carModel || '').toLowerCase();
           bValue = (b.carModel || '').toLowerCase();
           break;
+        case 'cpf':
+          aValue = a.cpf.toLowerCase();
+          bValue = b.cpf.toLowerCase();
+          break;
         default:
           return 0;
       }
@@ -109,66 +113,78 @@ const ListView = ({ columns, leads, onEditLead }: ListViewProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Lista de Leads</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span>Lista de Leads</span>
+          <Badge variant="secondary" className="ml-2">
+            {leads.length} {leads.length === 1 ? 'lead' : 'leads'}
+          </Badge>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {leads.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Nenhum lead encontrado.</p>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">Nenhum lead encontrado.</p>
+            <p className="text-muted-foreground text-sm mt-2">Adicione seu primeiro lead para começar.</p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <SortableHeader field="name">Nome</SortableHeader>
-                <SortableHeader field="phone">Telefone</SortableHeader>
-                <SortableHeader field="email">Email</SortableHeader>
-                <SortableHeader field="carModel">Carro</SortableHeader>
-                <SortableHeader field="createdAt">Data Criação</SortableHeader>
-                <SortableHeader field="status">Status/Etapa</SortableHeader>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedLeads.map((lead) => {
-                const column = columnsMap[lead.columnId];
-                const colorClass = colorVariants[column?.color as keyof typeof colorVariants] || colorVariants.gray;
-                
-                return (
-                  <TableRow key={lead.id} className="hover:bg-muted/50">
-                    <TableCell className="font-medium">{lead.name}</TableCell>
-                    <TableCell>{lead.phone}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{lead.email}</TableCell>
-                    <TableCell>{lead.carModel || '-'}</TableCell>
-                    <TableCell>
-                      {new Date(lead.createdAt).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell>
-                      {column ? (
-                        <Badge className={colorClass} variant="outline">
-                          {column.name}
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Status não encontrado</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {onEditLead && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEditLead(lead)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <SortableHeader field="name">Nome</SortableHeader>
+                  <SortableHeader field="phone">Telefone</SortableHeader>
+                  <SortableHeader field="email">Email</SortableHeader>
+                  <SortableHeader field="cpf">CPF</SortableHeader>
+                  <SortableHeader field="carModel">Carro</SortableHeader>
+                  <SortableHeader field="createdAt">Data Criação</SortableHeader>
+                  <SortableHeader field="status">Status/Etapa</SortableHeader>
+                  <TableHead className="w-[80px]">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedLeads.map((lead) => {
+                  const column = columnsMap[lead.columnId];
+                  const colorClass = colorVariants[column?.color as keyof typeof colorVariants] || colorVariants.gray;
+                  
+                  return (
+                    <TableRow key={lead.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">{lead.name}</TableCell>
+                      <TableCell className="font-mono">{lead.phone}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{lead.email}</TableCell>
+                      <TableCell className="font-mono">
+                        {lead.cpf ? `***.***.***-${lead.cpf.slice(-2)}` : '-'}
+                      </TableCell>
+                      <TableCell>{lead.carModel || '-'}</TableCell>
+                      <TableCell>
+                        {new Date(lead.createdAt).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                      <TableCell>
+                        {column ? (
+                          <Badge className={colorClass} variant="outline">
+                            {column.name}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Status não encontrado</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {onEditLead && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onEditLead(lead)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>
