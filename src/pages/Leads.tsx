@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Kanban, List, Plus } from 'lucide-react';
@@ -175,7 +174,6 @@ const Leads = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <SidebarTrigger className="md:hidden" />
           <div>
             <h1 className="text-3xl font-bold text-foreground">Leads</h1>
             <p className="text-muted-foreground">Gerencie seus leads e oportunidades</p>
