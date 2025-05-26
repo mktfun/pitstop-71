@@ -15,14 +15,14 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { 
-  grid2X2 as GridIcon, 
-  funnel as FunnelIcon, 
-  calendar as CalendarIcon, 
-  tool as ToolIcon, 
-  megaphone as MegaphoneIcon, 
-  barChart2 as BarChartIcon, 
-  settings as SettingsIcon,
-  logOut as LogOutIcon
+  Grid2X2 as GridIcon, 
+  Filter as FunnelIcon, 
+  Calendar as CalendarIcon, 
+  Wrench as ToolIcon, 
+  Megaphone as MegaphoneIcon, 
+  BarChart2 as BarChartIcon, 
+  Settings as SettingsIcon,
+  LogOut as LogOutIcon
 } from 'lucide-react';
 
 const menuItems = [
