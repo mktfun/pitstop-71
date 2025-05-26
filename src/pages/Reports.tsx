@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, TrendingUp, Users, Clock, DollarSign, Target, MapPin } from 'react-feather';
+import { Calendar, TrendingUp, Users, Clock, DollarSign, Target, MapPin, Tool, FileText, ChevronDown, ChevronUp } from 'react-feather';
 import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LeadsPerformanceModule from '@/components/reports/LeadsPerformanceModule';
@@ -165,6 +165,28 @@ const Reports = () => {
     };
   }, [filteredData]);
 
+  // KPIs de Ordens de Serviço
+  const serviceOrderKPIs = useMemo(() => {
+    const pendingOrders = filteredData.serviceOrders.filter(os => 
+      os.status === 'Pendente' || os.status === 'Diagnóstico'
+    ).length;
+
+    const inProgressOrders = filteredData.serviceOrders.filter(os => 
+      os.status === 'Em Execução' || os.status === 'Aguardando Peças' || os.status === 'Em Andamento'
+    ).length;
+
+    const completedOrders = filteredData.serviceOrders.filter(os => 
+      os.status === 'Concluída' || os.status === 'Aguardando Retirada' || os.status === 'Paga'
+    ).length;
+
+    return {
+      pendingOrders,
+      inProgressOrders,
+      completedOrders,
+      totalOrders: filteredData.serviceOrders.length
+    };
+  }, [filteredData.serviceOrders]);
+
   const periodLabels = {
     '7': 'Últimos 7 dias',
     '30': 'Últimos 30 dias',
@@ -310,6 +332,68 @@ const Reports = () => {
             leads={leads}
             dateRange={dateRange}
           />
+        </div>
+
+        {/* Resumo de Ordens de Serviço - Novo Card */}
+        <div className="lg:col-span-4 xl:col-span-6 lg:row-span-1">
+          <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5 h-full">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 rounded-2xl shadow-lg">
+                  <Tool className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Resumo de Ordens de Serviço</h2>
+                  <p className="text-slate-600 text-sm">Status das OS</p>
+                </div>
+              </div>
+
+              {serviceOrderKPIs.totalOrders > 0 ? (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100/50 border border-yellow-200/40 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="h-4 w-4 text-yellow-600" />
+                      <span className="text-sm font-semibold text-yellow-900 uppercase tracking-wide">Pendentes</span>
+                    </div>
+                    <p className="text-2xl font-bold text-yellow-900">
+                      {serviceOrderKPIs.pendingOrders}
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/40 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Tool className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-semibold text-blue-900 uppercase tracking-wide">Em Andamento</span>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-900">
+                      {serviceOrderKPIs.inProgressOrders}
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-50 to-green-100/50 border border-green-200/40 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Target className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-semibold text-green-900 uppercase tracking-wide">Concluídas</span>
+                    </div>
+                    <p className="text-2xl font-bold text-green-900">
+                      {serviceOrderKPIs.completedOrders}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-slate-50 rounded-xl">
+                    <p className="text-sm text-slate-600 text-center">
+                      <span className="font-semibold">{serviceOrderKPIs.totalOrders}</span> OS no total
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                  <p className="text-slate-500 font-medium">Nenhuma Ordem de Serviço encontrada para o período/unidade selecionada</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Análise de Clientes - Bloco Horizontal */}

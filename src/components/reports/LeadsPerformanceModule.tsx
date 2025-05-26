@@ -1,9 +1,8 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { FunnelChart, Funnel, ResponsiveContainer, LabelList, Tooltip } from 'recharts';
-import { TrendingUp, Users, Clock, Target } from 'react-feather';
+import { TrendingUp, Users, Clock, Target, ChevronDown, ChevronUp } from 'react-feather';
 import { differenceInDays } from 'date-fns';
 import { DateRange, Lead } from '@/pages/Reports';
 
@@ -27,6 +26,8 @@ const KANBAN_STAGES = [
 ];
 
 const LeadsPerformanceModule = ({ leads, allLeads, dateRange }: LeadsPerformanceModuleProps) => {
+  const [isLeadsStagesExpanded, setIsLeadsStagesExpanded] = useState(false);
+
   // Dados do funil - usa os leads já filtrados que vêm como prop
   const funnelData = useMemo(() => {
     const stageCount: Record<string, number> = {};
@@ -90,6 +91,22 @@ const LeadsPerformanceModule = ({ leads, allLeads, dateRange }: LeadsPerformance
       avgTimeToClose: Math.round(avgTimeToClose)
     };
   }, [leads, allLeads]);
+
+  // Dados dos estágios para a tabela expansível
+  const allStagesData = useMemo(() => {
+    return KANBAN_STAGES.map(stage => {
+      const count = leads.filter(lead => lead.columnId === stage.id).length;
+      const percentage = kpis.totalLeads > 0 ? (count / kpis.totalLeads) * 100 : 0;
+      
+      return {
+        ...stage,
+        count,
+        percentage
+      };
+    }).filter(stage => stage.count > 0);
+  }, [leads, kpis.totalLeads]);
+
+  const stagesToShow = isLeadsStagesExpanded ? allStagesData : allStagesData.slice(0, 3);
 
   return (
     <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5 h-full">
@@ -181,35 +198,47 @@ const LeadsPerformanceModule = ({ leads, allLeads, dateRange }: LeadsPerformance
           )}
         </div>
 
-        {/* Distribuição por Estágio Refinada */}
+        {/* Distribuição por Estágio Refinada com Expansão */}
         <div className="mt-8">
           <h3 className="text-xl font-bold text-slate-900 mb-6">Distribuição por Estágio</h3>
           <div className="space-y-3">
-            {KANBAN_STAGES.map(stage => {
-              const count = leads.filter(lead => lead.columnId === stage.id).length;
-              const percentage = kpis.totalLeads > 0 ? (count / kpis.totalLeads) * 100 : 0;
-              
-              if (count === 0) return null;
-              
-              return (
-                <div key={stage.id} className="flex items-center justify-between p-4 bg-white/50 backdrop-blur-sm border border-slate-200/40 rounded-xl hover:bg-white/80 transition-all duration-200">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full shadow-sm"
-                      style={{ backgroundColor: stage.color }}
-                    />
-                    <span className="font-semibold text-slate-900">{stage.name}</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-slate-600 font-medium">{count} leads</span>
-                    <span className="text-lg font-bold text-slate-900 min-w-[60px] text-right">
-                      {percentage.toFixed(1)}%
-                    </span>
-                  </div>
+            {stagesToShow.map(stage => (
+              <div key={stage.id} className="flex items-center justify-between p-4 bg-white/50 backdrop-blur-sm border border-slate-200/40 rounded-xl hover:bg-white/80 transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-4 h-4 rounded-full shadow-sm"
+                    style={{ backgroundColor: stage.color }}
+                  />
+                  <span className="font-semibold text-slate-900">{stage.name}</span>
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-slate-600 font-medium">{stage.count} leads</span>
+                  <span className="text-lg font-bold text-slate-900 min-w-[60px] text-right">
+                    {stage.percentage.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
+          
+          {/* Botão Ver Mais/Ver Menos */}
+          {allStagesData.length > 3 && (
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setIsLeadsStagesExpanded(!isLeadsStagesExpanded)}
+                className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer flex items-center gap-2 mx-auto transition-colors duration-200"
+              >
+                <span className="font-medium">
+                  {isLeadsStagesExpanded ? 'Ver Menos' : 'Ver Mais'}
+                </span>
+                {isLeadsStagesExpanded ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
