@@ -14,7 +14,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AppLayout from "./components/AppLayout";
 import OnboardingOrgStep from "./components/onboarding/OnboardingOrgStep";
-import OnboardingUnit from "./pages/OnboardingUnit";
+import OnboardingUnitStep from "./components/onboarding/OnboardingUnitStep";
+import OnboardingInvitesStep from "./components/onboarding/OnboardingInvitesStep";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +28,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/onboarding/organizacao" element={<OnboardingOrgStep />} />
-          <Route path="/onboarding/unidade" element={<OnboardingUnit />} />
+          <Route path="/onboarding/unidade" element={<OnboardingUnitStep />} />
+          <Route path="/onboarding/convites" element={<OnboardingInvitesStep />} />
           <Route path="/" element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/leads" element={<Leads />} />
