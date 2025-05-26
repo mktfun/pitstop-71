@@ -313,27 +313,10 @@ const Reports = () => {
         </div>
       </div>
 
-      {/* Bento Grid Layout Refinado - Aumentando o card de Leads */}
+      {/* Bento Grid Layout Refinado - Reorganizado */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Desempenho de Leads - Bloco Principal Expandido */}
+        {/* Resumo de Ordens de Serviço - Posição Superior */}
         <div className="lg:col-span-12 xl:col-span-8">
-          <LeadsPerformanceModule 
-            leads={filteredData.leads}
-            allLeads={leads}
-            dateRange={dateRange}
-          />
-        </div>
-
-        {/* Cards Laterais */}
-        <div className="lg:col-span-12 xl:col-span-4 space-y-6">
-          {/* Análise de Agendamentos */}
-          <AppointmentsAnalysisModule 
-            appointments={filteredData.appointments}
-            leads={leads}
-            dateRange={dateRange}
-          />
-
-          {/* Resumo de Ordens de Serviço */}
           <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-6">
@@ -392,6 +375,25 @@ const Reports = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Cards Laterais */}
+        <div className="lg:col-span-12 xl:col-span-4 space-y-6">
+          {/* Análise de Agendamentos */}
+          <AppointmentsAnalysisModule 
+            appointments={filteredData.appointments}
+            leads={leads}
+            dateRange={dateRange}
+          />
+        </div>
+
+        {/* Desempenho de Leads - Movido para baixo */}
+        <div className="lg:col-span-12">
+          <LeadsPerformanceModule 
+            leads={filteredData.leads}
+            allLeads={leads}
+            dateRange={dateRange}
+          />
         </div>
 
         {/* Análise de Clientes - Bloco Horizontal */}
