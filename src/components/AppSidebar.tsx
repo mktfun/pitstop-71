@@ -73,7 +73,7 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar className="border-r border-sidebar-border shadow-lg transition-all duration-300 ease-in-out">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-lg transition-all duration-300 ease-in-out">
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-sidebar-foreground transition-all duration-200 ease-in-out group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-2">
