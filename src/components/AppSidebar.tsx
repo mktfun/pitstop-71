@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { 
@@ -65,6 +66,8 @@ const menuItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
+  const { state } = useSidebar();
+  const isCollapsed = state === 'collapsed';
 
   const handleLogout = () => {
     localStorage.removeItem('loggedIn');
@@ -73,17 +76,22 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-lg transition-all duration-300 ease-in-out">
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-sidebar-foreground transition-all duration-200 ease-in-out group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-2">
-            PitStop
-          </h2>
-          <SidebarTrigger className="ml-auto transition-transform duration-150 ease-in-out hover:scale-110" />
+    <Sidebar 
+      collapsible="icon" 
+      className="border-r border-sidebar-border shadow-lg transition-all duration-300 ease-in-out"
+    >
+      <SidebarHeader className="border-b border-sidebar-border">
+        <div className="flex items-center justify-between p-4">
+          {!isCollapsed && (
+            <h2 className="text-lg font-bold text-sidebar-foreground">
+              PitStop
+            </h2>
+          )}
+          <SidebarTrigger className="h-8 w-8 transition-transform duration-150 ease-in-out hover:scale-110" />
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent className={isCollapsed ? "px-1" : "px-2"}>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
@@ -92,13 +100,30 @@ const AppSidebar = () => {
                   <SidebarMenuButton
                     asChild
                     isActive={location.pathname === item.url}
-                    className="h-10 transition-all duration-150 ease-in-out hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
+                    className={`
+                      transition-all duration-150 ease-in-out
+                      hover:bg-sidebar-accent hover:text-sidebar-accent-foreground 
+                      data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground
+                      ${isCollapsed 
+                        ? 'h-12 w-12 p-0 justify-center mx-auto' 
+                        : 'h-10 justify-start'
+                      }
+                    `}
+                    tooltip={isCollapsed ? item.title : undefined}
                   >
-                    <NavLink to={item.url} className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                      <span className="transition-all duration-200 ease-in-out group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-4">
-                        {item.title}
-                      </span>
+                    <NavLink 
+                      to={item.url} 
+                      className={`
+                        flex items-center transition-all duration-200 ease-in-out
+                        ${isCollapsed ? 'justify-center' : 'gap-3'}
+                      `}
+                    >
+                      <item.icon className={`flex-shrink-0 ${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                      {!isCollapsed && (
+                        <span className="truncate">
+                          {item.title}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -111,26 +136,41 @@ const AppSidebar = () => {
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="space-y-3">
           {/* User Info */}
-          <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center transition-all duration-200 ease-in-out">
-            <Avatar className="h-8 w-8 flex-shrink-0">
+          <div className={`
+            flex items-center transition-all duration-200 ease-in-out
+            ${isCollapsed ? 'justify-center' : 'gap-3'}
+          `}>
+            <Avatar className={`flex-shrink-0 ${isCollapsed ? 'h-8 w-8' : 'h-8 w-8'}`}>
               <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-xs">
                 U
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm text-sidebar-foreground transition-all duration-200 ease-in-out group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-4">
-              Usuário
-            </span>
+            {!isCollapsed && (
+              <span className="text-sm text-sidebar-foreground truncate">
+                Usuário
+              </span>
+            )}
           </div>
 
           {/* Logout Button */}
           <SidebarMenuButton
             onClick={handleLogout}
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-150 ease-in-out"
+            className={`
+              text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground 
+              transition-all duration-150 ease-in-out
+              ${isCollapsed 
+                ? 'h-12 w-12 p-0 justify-center mx-auto' 
+                : 'w-full justify-start'
+              }
+            `}
+            tooltip={isCollapsed ? "Sair" : undefined}
           >
-            <LogOut className="h-4 w-4 flex-shrink-0" />
-            <span className="transition-all duration-200 ease-in-out group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-4">
-              Sair
-            </span>
+            <LogOut className={`flex-shrink-0 ${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'}`} />
+            {!isCollapsed && (
+              <span className="truncate">
+                Sair
+              </span>
+            )}
           </SidebarMenuButton>
         </div>
       </SidebarFooter>
