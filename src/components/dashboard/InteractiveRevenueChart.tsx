@@ -6,7 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { format, parseISO, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, isSameMonth, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { PeriodFilter } from '@/types/dashboard';
+import { PeriodFilter } from '@/pages/Dashboard';
 import { BarChart3, TrendingUp } from 'lucide-react';
 
 interface ServiceOrder {
