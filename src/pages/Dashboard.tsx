@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Tool, Users, Calendar, TrendingUp } from 'lucide-react';
+import { Settings, User, Calendar, TrendingUp } from 'lucide-react';
 import KPICard from '@/components/dashboard/KPICard';
 import RevenueChart from '@/components/dashboard/RevenueChart';
 import AppointmentsTable from '@/components/dashboard/AppointmentsTable';
@@ -116,14 +116,14 @@ const Dashboard = () => {
         <KPICard
           title="O.S. Abertas"
           value={openOSCount}
-          icon={Tool}
+          icon={Settings}
           linkTo="/ordens-servico"
           linkText="Ver Ordens"
         />
         <KPICard
           title="Novos Leads"
           value={newLeadsCount}
-          icon={Users}
+          icon={User}
           linkTo="/leads"
           linkText="Ver Leads"
         />
