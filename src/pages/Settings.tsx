@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Settings as SettingsIcon, User, Palette } from 'react-feather';
+import { Settings as SettingsIcon, User, Sliders } from 'react-feather';
 
 const Settings = () => {
   return (
@@ -33,7 +33,7 @@ const Settings = () => {
               
               {/* Appearance Menu Item */}
               <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-transparent hover:border-border/50">
-                <Palette className="h-4 w-4 text-primary" />
+                <Sliders className="h-4 w-4 text-primary" />
                 <span className="font-medium">Aparência</span>
               </div>
             </nav>
