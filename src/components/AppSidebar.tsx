@@ -19,7 +19,7 @@ import {
   Users,
   Calendar,
   Tool,
-  Megaphone,
+  Volume2,
   BarChart2,
   Settings,
   LogOut
@@ -49,7 +49,7 @@ const menuItems = [
   {
     title: 'Marketing Digital',
     url: '/marketing',
-    icon: Megaphone,
+    icon: Volume2,
   },
   {
     title: 'Relatórios',
