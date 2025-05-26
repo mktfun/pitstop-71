@@ -115,3 +115,51 @@ export const getAvailableLeads = (): Lead[] => {
     return [];
   }
 };
+
+// Funções para trabalhar com serviços
+export interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  estimatedTime: number;
+  isActive: boolean;
+  category: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getActiveServices = (): Service[] => {
+  try {
+    const stored = localStorage.getItem('pitstop_services');
+    if (!stored) return [];
+
+    const services: Service[] = JSON.parse(stored);
+    return services.filter(service => service.isActive);
+  } catch (error) {
+    console.error('Erro ao carregar serviços:', error);
+    return [];
+  }
+};
+
+export const getServiceById = (serviceId: string): Service | null => {
+  try {
+    const stored = localStorage.getItem('pitstop_services');
+    if (!stored) return null;
+
+    const services: Service[] = JSON.parse(stored);
+    return services.find(service => service.id === serviceId) || null;
+  } catch (error) {
+    console.error('Erro ao buscar serviço:', error);
+    return null;
+  }
+};
+
+export const getServiceName = (serviceId: string | undefined): string => {
+  if (!serviceId) return '-';
+  
+  const service = getServiceById(serviceId);
+  if (!service) return 'Serviço Removido/Inativo';
+  
+  return service.name;
+};

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Save, Trash2, FileText, Car, Wrench, Calendar } from 'lucide-react';
+import { Plus, X, Save, Trash2, FileText, Car, Wrench, Calendar, Briefcase } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ServiceOrder, ServiceOrderService, OS_STATUS } from '@/types/serviceOrder';
-import { getLeadName } from '@/utils/serviceOrderUtils';
+import { getLeadName, getActiveServices, getServiceName, Service } from '@/utils/serviceOrderUtils';
 
 interface ServiceOrderDetailsModalProps {
   isOpen: boolean;
@@ -24,11 +24,13 @@ const ServiceOrderDetailsModal = ({ isOpen, onClose, serviceOrder, onSave, onDel
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<ServiceOrder | null>(null);
   const [leadName, setLeadName] = useState('');
+  const [activeServices, setActiveServices] = useState<Service[]>([]);
 
   useEffect(() => {
     if (serviceOrder) {
       setFormData({ ...serviceOrder });
       setLeadName(getLeadName(serviceOrder.leadId));
+      setActiveServices(getActiveServices());
     }
   }, [serviceOrder]);
 
@@ -165,6 +167,36 @@ const ServiceOrderDetailsModal = ({ isOpen, onClose, serviceOrder, onSave, onDel
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Serviço Principal */}
+          <div className="space-y-2">
+            <Label className="flex items-center space-x-1">
+              <Briefcase className="h-4 w-4" />
+              <span>Serviço Principal</span>
+            </Label>
+            {editMode ? (
+              <Select 
+                value={formData.serviceId || ''} 
+                onValueChange={(value) => setFormData({ ...formData, serviceId: value || undefined })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="-- Nenhum / Serviço Avulso --" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">-- Nenhum / Serviço Avulso --</SelectItem>
+                  {activeServices.map(service => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} - R$ {service.price.toFixed(2)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="p-2 bg-muted rounded">
+                {getServiceName(formData.serviceId)}
+              </div>
+            )}
           </div>
 
           {/* Informações do Veículo */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Car, FileText, Wrench } from 'lucide-react';
+import { Plus, X, Car, FileText, Wrench, Briefcase } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { ServiceOrderService, OS_STATUS } from '@/types/serviceOrder';
 import { Lead } from '@/pages/Leads';
-import { getAvailableLeads } from '@/utils/serviceOrderUtils';
+import { getAvailableLeads, getActiveServices, Service } from '@/utils/serviceOrderUtils';
 
 interface CreateServiceOrderModalProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ interface CreateServiceOrderModalProps {
     reportedIssues: string;
     services: ServiceOrderService[];
     status: string;
+    serviceId?: string;
   }) => void;
 }
 
@@ -28,21 +29,25 @@ interface FormData {
   vehicleInfo: string;
   reportedIssues: string;
   status: string;
+  serviceId: string;
 }
 
 const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrderModalProps) => {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [activeServices, setActiveServices] = useState<Service[]>([]);
   const [formData, setFormData] = useState<FormData>({
     leadId: '',
     vehicleInfo: '',
     reportedIssues: '',
-    status: OS_STATUS.DIAGNOSIS
+    status: OS_STATUS.DIAGNOSIS,
+    serviceId: ''
   });
   const [services, setServices] = useState<ServiceOrderService[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       setLeads(getAvailableLeads());
+      setActiveServices(getActiveServices());
       resetForm();
     }
   }, [isOpen]);
@@ -52,7 +57,8 @@ const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrder
       leadId: '',
       vehicleInfo: '',
       reportedIssues: '',
-      status: OS_STATUS.DIAGNOSIS
+      status: OS_STATUS.DIAGNOSIS,
+      serviceId: ''
     });
     setServices([]);
   };
@@ -98,6 +104,7 @@ const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrder
 
     onSave({
       ...formData,
+      serviceId: formData.serviceId || undefined,
       services
     });
     
@@ -158,6 +165,39 @@ const CreateServiceOrderModal = ({ isOpen, onClose, onSave }: CreateServiceOrder
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="serviceId" className="flex items-center space-x-1">
+              <Briefcase className="h-4 w-4" />
+              <span>Serviço Principal</span>
+            </Label>
+            <Select value={formData.serviceId} onValueChange={(value) => setFormData(prev => ({ ...prev, serviceId: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="-- Nenhum / Serviço Avulso --" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">-- Nenhum / Serviço Avulso --</SelectItem>
+                {activeServices.length === 0 ? (
+                  <SelectItem value="no-services" disabled>
+                    Nenhum serviço ativo encontrado
+                  </SelectItem>
+                ) : (
+                  activeServices.map(service => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} - R$ {service.price.toFixed(2)}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            {activeServices.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                <a href="/configuracoes" className="text-primary hover:underline">
+                  Configure serviços primeiro
+                </a>
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

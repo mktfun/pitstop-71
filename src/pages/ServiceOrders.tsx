@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Plus, FileText, Search, Filter, Eye, Calendar, Car, User, BarChart3 } from 'lucide-react';
+import { Plus, FileText, Search, Filter, Eye, Calendar, Car, User, BarChart3, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,8 @@ import {
   saveServiceOrders, 
   createServiceOrder, 
   updateServiceOrderStatus, 
-  getLeadName 
+  getLeadName,
+  getServiceName
 } from '@/utils/serviceOrderUtils';
 
 const ServiceOrders = () => {
@@ -49,7 +50,8 @@ const ServiceOrders = () => {
       filtered = filtered.filter(order => 
         order.osNumber.toLowerCase().includes(term) ||
         getLeadName(order.leadId).toLowerCase().includes(term) ||
-        order.vehicleInfo.toLowerCase().includes(term)
+        order.vehicleInfo.toLowerCase().includes(term) ||
+        getServiceName(order.serviceId).toLowerCase().includes(term)
       );
     }
 
@@ -67,6 +69,7 @@ const ServiceOrders = () => {
     reportedIssues: string;
     services: any[];
     status: string;
+    serviceId?: string;
   }) => {
     createServiceOrder(orderData);
     loadServiceOrders();
@@ -265,7 +268,7 @@ const ServiceOrders = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por nº OS, cliente ou veículo..."
+                  placeholder="Buscar por nº OS, cliente, veículo ou serviço..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -316,6 +319,7 @@ const ServiceOrders = () => {
                       <TableHead>Nº OS</TableHead>
                       <TableHead>Cliente</TableHead>
                       <TableHead>Veículo</TableHead>
+                      <TableHead>Serviço Principal</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Data Criação</TableHead>
                       <TableHead>Ações</TableHead>
@@ -337,6 +341,12 @@ const ServiceOrders = () => {
                           <div className="flex items-center space-x-2">
                             <Car className="h-4 w-4 text-muted-foreground" />
                             <span className="truncate max-w-[200px]">{order.vehicleInfo}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <span className="truncate max-w-[150px]">{getServiceName(order.serviceId)}</span>
                           </div>
                         </TableCell>
                         <TableCell>

@@ -16,6 +16,7 @@ export interface ServiceOrder {
   status: string;
   createdAt: string;
   completedAt?: string;
+  serviceId?: string; // Campo opcional para o serviço principal
 }
 
 export const OS_STATUS = {
