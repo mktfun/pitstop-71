@@ -59,7 +59,7 @@ export interface Unit {
 
 const Reports = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>('30');
-  const [selectedUnitId, setSelectedUnitId] = useState<string>('');
+  const [selectedUnitId, setSelectedUnitId] = useState<string>('all');
   const [customDateRange, setCustomDateRange] = useState<DateRange | null>(null);
 
   // Calcular período baseado na seleção
@@ -125,16 +125,16 @@ const Reports = () => {
     });
 
     // Passo 2: Filtrar por unidade (se selecionada)
-    const filteredLeads = selectedUnitId !== '' 
+    const filteredLeads = selectedUnitId !== 'all' 
       ? filteredLeadsByPeriod.filter(lead => lead.unitId === selectedUnitId)
       : filteredLeadsByPeriod;
 
-    const filteredAppointments = selectedUnitId !== ''
+    const filteredAppointments = selectedUnitId !== 'all'
       ? filteredAppointmentsByPeriod.filter(appointment => appointment.unitId === selectedUnitId)
       : filteredAppointmentsByPeriod;
 
     // Para service orders, filtrar baseado no unitId do lead associado
-    const filteredServiceOrders = selectedUnitId !== ''
+    const filteredServiceOrders = selectedUnitId !== 'all'
       ? filteredServiceOrdersByPeriod.filter(os => {
           const associatedLead = leads.find(lead => lead.id === os.leadId);
           return associatedLead && associatedLead.unitId === selectedUnitId;
@@ -176,7 +176,7 @@ const Reports = () => {
 
   // Buscar nome da unidade selecionada
   const selectedUnitName = useMemo(() => {
-    if (selectedUnitId === '') return 'Todas as Unidades';
+    if (selectedUnitId === 'all') return 'Todas as Unidades';
     const unit = units.find(u => u.id === selectedUnitId);
     return unit ? unit.name : 'Unidade não encontrada';
   }, [selectedUnitId, units]);
@@ -224,7 +224,7 @@ const Reports = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as Unidades</SelectItem>
+                <SelectItem value="all">Todas as Unidades</SelectItem>
                 {units.map(unit => (
                   <SelectItem key={unit.id} value={unit.id}>
                     {unit.name}
