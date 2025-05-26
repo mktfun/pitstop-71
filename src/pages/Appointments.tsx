@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
@@ -11,6 +10,7 @@ import MonthView from '@/components/appointments/MonthView';
 import AddAppointmentModal from '@/components/appointments/AddAppointmentModal';
 import ViewAppointmentModal from '@/components/appointments/ViewAppointmentModal';
 import { Lead } from '@/pages/Leads';
+import { updateLeadStatus, addLeadHistoryEntry, KANBAN_COLUMNS, HISTORY_TYPES } from '@/utils/leadAutomation';
 
 export interface Appointment {
   id: string;
@@ -62,36 +62,6 @@ const Appointments = () => {
     localStorage.setItem('pitstop_appointments', JSON.stringify(newAppointments));
   };
 
-  const addLeadHistoryEntry = (leadId: string, type: string, description: string) => {
-    const updatedLeads = leads.map(lead => {
-      if (lead.id === leadId) {
-        const historyEntry = {
-          timestamp: new Date().toISOString(),
-          type,
-          description
-        };
-        return {
-          ...lead,
-          history: [historyEntry, ...lead.history]
-        };
-      }
-      return lead;
-    });
-    setLeads(updatedLeads);
-    localStorage.setItem('pitstop_leads', JSON.stringify(updatedLeads));
-  };
-
-  const updateLeadStatus = (leadId: string, newColumnId: string) => {
-    const updatedLeads = leads.map(lead => 
-      lead.id === leadId 
-        ? { ...lead, columnId: newColumnId }
-        : lead
-    );
-
-    setLeads(updatedLeads);
-    localStorage.setItem('pitstop_leads', JSON.stringify(updatedLeads));
-  };
-
   const handleAddAppointment = (appointmentData: Omit<Appointment, 'id' | 'createdAt'>) => {
     const newAppointment: Appointment = {
       ...appointmentData,
@@ -102,17 +72,17 @@ const Appointments = () => {
 
     saveAppointments([...appointments, newAppointment]);
     
-    // Update lead status to scheduled (col-scheduled)
-    updateLeadStatus(appointmentData.leadId, 'col-scheduled');
-    
-    // Add history entry
+    // Usar função utilitária para atualizar lead
     const formattedDate = format(new Date(appointmentData.date), 'dd/MM/yyyy', { locale: ptBR });
-    addLeadHistoryEntry(
-      appointmentData.leadId, 
-      'Agendamento Criado', 
-      `Agendado para ${formattedDate} ${appointmentData.time} - Serviço: ${appointmentData.serviceType}`
-    );
+    updateLeadStatus({
+      leadId: appointmentData.leadId,
+      newColumnId: KANBAN_COLUMNS.SCHEDULED,
+      historyType: HISTORY_TYPES.APPOINTMENT_CREATED,
+      historyDescription: `Agendado para ${formattedDate} ${appointmentData.time} - Serviço: ${appointmentData.serviceType}`
+    });
     
+    // Recarregar leads para refletir mudanças
+    loadData();
     setIsAddModalOpen(false);
   };
 
@@ -127,14 +97,16 @@ const Appointments = () => {
 
     saveAppointments(updatedAppointments);
     
-    // Add history entry for edit
+    // Usar função utilitária para adicionar ao histórico
     const formattedDate = format(new Date(appointmentData.date), 'dd/MM/yyyy', { locale: ptBR });
     addLeadHistoryEntry(
-      appointmentData.leadId, 
-      'Agendamento Editado', 
+      appointmentData.leadId,
+      HISTORY_TYPES.APPOINTMENT_EDITED,
       `Agendamento atualizado para ${formattedDate} ${appointmentData.time} - Serviço: ${appointmentData.serviceType}`
     );
     
+    // Recarregar leads para refletir mudanças
+    loadData();
     setEditingAppointment(null);
     setIsViewModalOpen(false);
   };
@@ -146,13 +118,16 @@ const Appointments = () => {
         const updatedAppointments = appointments.filter(appointment => appointment.id !== appointmentId);
         saveAppointments(updatedAppointments);
         
-        // Add history entry for deletion
+        // Usar função utilitária para adicionar ao histórico
         const formattedDate = format(new Date(appointmentToDelete.date), 'dd/MM/yyyy', { locale: ptBR });
         addLeadHistoryEntry(
-          appointmentToDelete.leadId, 
-          'Agendamento Excluído', 
+          appointmentToDelete.leadId,
+          HISTORY_TYPES.APPOINTMENT_DELETED,
           `Agendamento de ${formattedDate} ${appointmentToDelete.time} excluído`
         );
+        
+        // Recarregar leads para refletir mudanças
+        loadData();
       }
       setIsViewModalOpen(false);
     }
@@ -170,17 +145,17 @@ const Appointments = () => {
     );
     saveAppointments(updatedAppointments);
 
-    // Update lead status to attended (col-in-service)
-    updateLeadStatus(appointment.leadId, 'col-in-service');
-    
-    // Add history entry
+    // Usar função utilitária para atualizar lead
     const formattedDate = format(new Date(appointment.date), 'dd/MM/yyyy', { locale: ptBR });
-    addLeadHistoryEntry(
-      appointment.leadId, 
-      'Comparecimento Registrado', 
-      `Cliente compareceu ao agendamento de ${formattedDate} ${appointment.time}`
-    );
+    updateLeadStatus({
+      leadId: appointment.leadId,
+      newColumnId: KANBAN_COLUMNS.IN_SERVICE,
+      historyType: HISTORY_TYPES.ATTENDANCE_REGISTERED,
+      historyDescription: `Cliente compareceu ao agendamento de ${formattedDate} ${appointment.time}`
+    });
     
+    // Recarregar leads para refletir mudanças
+    loadData();
     setIsViewModalOpen(false);
   };
 

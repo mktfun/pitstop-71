@@ -7,6 +7,7 @@ import KanbanView from '@/components/leads/KanbanView';
 import ListView from '@/components/leads/ListView';
 import AddLeadModal from '@/components/leads/AddLeadModal';
 import LeadDetailsModal from '@/components/leads/LeadDetailsModal';
+import { updateLeadStatus, addLeadHistoryEntry, KANBAN_COLUMNS, HISTORY_TYPES } from '@/utils/leadAutomation';
 
 export interface KanbanColumn {
   id: string;
@@ -95,33 +96,15 @@ const Leads = () => {
     localStorage.setItem('pitstop_leads', JSON.stringify(newLeads));
   };
 
-  const addHistoryEntry = (leadId: string, type: string, description: string) => {
-    const updatedLeads = leads.map(lead => {
-      if (lead.id === leadId) {
-        const historyEntry: LeadHistoryEntry = {
-          timestamp: new Date().toISOString(),
-          type,
-          description
-        };
-        return {
-          ...lead,
-          history: [historyEntry, ...lead.history]
-        };
-      }
-      return lead;
-    });
-    saveLeads(updatedLeads);
-  };
-
   const handleAddLead = (leadData: Omit<Lead, 'id' | 'createdAt' | 'columnId' | 'history'>) => {
     const newLead: Lead = {
       ...leadData,
       id: `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
-      columnId: 'col-prospect',
+      columnId: KANBAN_COLUMNS.PROSPECT,
       history: [{
         timestamp: new Date().toISOString(),
-        type: 'Criação',
+        type: HISTORY_TYPES.CREATION,
         description: 'Lead criado'
       }]
     };
@@ -141,7 +124,7 @@ const Leads = () => {
             history: [
               {
                 timestamp: new Date().toISOString(),
-                type: 'Edição',
+                type: HISTORY_TYPES.EDIT,
                 description: 'Dados do lead atualizados'
               },
               ...lead.history
@@ -158,23 +141,16 @@ const Leads = () => {
     const targetColumn = columns.find(col => col.id === newColumnId);
     if (!targetColumn) return;
 
-    const updatedLeads = leads.map(lead => {
-      if (lead.id === leadId) {
-        const historyEntry: LeadHistoryEntry = {
-          timestamp: new Date().toISOString(),
-          type: 'Mudança de Etapa',
-          description: `Movido para '${targetColumn.name}'`
-        };
-        return {
-          ...lead,
-          columnId: newColumnId,
-          history: [historyEntry, ...lead.history]
-        };
-      }
-      return lead;
+    // Usar função utilitária para atualizar lead
+    updateLeadStatus({
+      leadId,
+      newColumnId,
+      historyType: HISTORY_TYPES.STAGE_CHANGE,
+      historyDescription: `Movido para '${targetColumn.name}'`
     });
 
-    saveLeads(updatedLeads);
+    // Recarregar dados para refletir mudanças
+    loadData();
   };
 
   const openEditModal = (lead: Lead) => {
