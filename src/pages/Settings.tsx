@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, User, Sliders, MapPin } from 'react-feather';
+import { Settings as SettingsIcon, User, Sliders, MapPin, Wrench } from 'react-feather';
 import UnitsManagement from '../components/settings/UnitsManagement';
+import ServicesManagement from '../components/settings/ServicesManagement';
 
-type SettingsSection = 'profile' | 'appearance' | 'units';
+type SettingsSection = 'profile' | 'appearance' | 'units' | 'services';
 
 const Settings = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
@@ -40,6 +41,8 @@ const Settings = () => {
         );
       case 'units':
         return <UnitsManagement />;
+      case 'services':
+        return <ServicesManagement />;
       default:
         return null;
     }
@@ -104,6 +107,19 @@ const Settings = () => {
               >
                 <MapPin className="h-4 w-4" />
                 <span className="font-medium">Unidades</span>
+              </div>
+
+              {/* Services Menu Item */}
+              <div 
+                className={`flex items-center gap-3 p-3 rounded-lg transition-colors cursor-pointer border ${
+                  activeSection === 'services' 
+                    ? 'bg-primary text-primary-foreground border-primary/50' 
+                    : 'border-transparent hover:bg-accent hover:text-accent-foreground hover:border-border/50'
+                }`}
+                onClick={() => setActiveSection('services')}
+              >
+                <Wrench className="h-4 w-4" />
+                <span className="font-medium">Serviços</span>
               </div>
             </nav>
           </div>
