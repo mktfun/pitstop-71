@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -93,19 +92,21 @@ const Reports = () => {
 
   // Filtrar dados pelo período selecionado
   const filteredData = useMemo(() => {
+    const interval = { start: dateRange.from, end: dateRange.to };
+    
     const filteredLeads = leads.filter(lead => {
       const createdDate = new Date(lead.createdAt);
-      return isWithinInterval(createdDate, dateRange);
+      return isWithinInterval(createdDate, interval);
     });
 
     const filteredAppointments = appointments.filter(appointment => {
       const appointmentDate = new Date(appointment.date);
-      return isWithinInterval(appointmentDate, dateRange);
+      return isWithinInterval(appointmentDate, interval);
     });
 
     const filteredServiceOrders = serviceOrders.filter(os => {
       const createdDate = new Date(os.createdAt);
-      return isWithinInterval(createdDate, dateRange);
+      return isWithinInterval(createdDate, interval);
     });
 
     return {

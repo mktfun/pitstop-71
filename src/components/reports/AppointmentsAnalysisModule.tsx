@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -59,7 +58,8 @@ const AppointmentsAnalysisModule = ({ appointments, leads, dateRange }: Appointm
 
   // Agendamentos por dia
   const dailyAppointments = useMemo(() => {
-    const days = eachDayOfInterval(dateRange);
+    const interval = { start: dateRange.from, end: dateRange.to };
+    const days = eachDayOfInterval(interval);
     
     return days.map(day => {
       const dayAppointments = appointments.filter(appointment => 
