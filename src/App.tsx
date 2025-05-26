@@ -16,6 +16,7 @@ import AppLayout from "./components/AppLayout";
 import OnboardingOrgStep from "./components/onboarding/OnboardingOrgStep";
 import OnboardingUnitStep from "./components/onboarding/OnboardingUnitStep";
 import OnboardingInvitesStep from "./components/onboarding/OnboardingInvitesStep";
+import OnboardingCompletionStep from "./components/onboarding/OnboardingCompletionStep";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/onboarding/organizacao" element={<OnboardingOrgStep />} />
           <Route path="/onboarding/unidade" element={<OnboardingUnitStep />} />
           <Route path="/onboarding/convites" element={<OnboardingInvitesStep />} />
+          <Route path="/onboarding/concluido" element={<OnboardingCompletionStep />} />
           <Route path="/" element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/leads" element={<Leads />} />
