@@ -28,10 +28,20 @@ interface KanbanViewProps {
   leads: Lead[];
   onColumnsChange: (columns: KanbanColumnType[]) => void;
   onLeadsChange: (leads: Lead[]) => void;
+  onLeadMove: (leadId: string, newColumnId: string) => void;
   onEditLead?: (lead: Lead) => void;
+  onViewLead?: (lead: Lead) => void;
 }
 
-const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange, onEditLead }: KanbanViewProps) => {
+const KanbanView = ({ 
+  columns, 
+  leads, 
+  onColumnsChange, 
+  onLeadsChange, 
+  onLeadMove,
+  onEditLead,
+  onViewLead 
+}: KanbanViewProps) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
 
@@ -63,12 +73,7 @@ const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange, onEditLead
       const overLead = leads.find(lead => lead.id === overId);
       
       if (activeLead && overLead && activeLead.columnId !== overLead.columnId) {
-        const updatedLeads = leads.map(lead => 
-          lead.id === activeId 
-            ? { ...lead, columnId: overLead.columnId }
-            : lead
-        );
-        onLeadsChange(updatedLeads);
+        onLeadMove(activeId, overLead.columnId);
       }
     }
   };
@@ -116,12 +121,7 @@ const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange, onEditLead
       const targetColumn = columns.find(col => col.id === overId);
       
       if (targetColumn) {
-        const updatedLeads = leads.map(lead => 
-          lead.id === activeId 
-            ? { ...lead, columnId: targetColumn.id }
-            : lead
-        );
-        onLeadsChange(updatedLeads);
+        onLeadMove(activeId, targetColumn.id);
       }
     }
 
@@ -194,6 +194,7 @@ const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange, onEditLead
                 onEditColumn={handleEditColumn}
                 onDeleteColumn={handleDeleteColumn}
                 onEditLead={onEditLead}
+                onViewLead={onViewLead}
               />
             ))}
           </SortableContext>

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { ArrowUpDown, Edit } from 'lucide-react';
+import { ArrowUpDown, Edit, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,23 +18,24 @@ interface ListViewProps {
   columns: KanbanColumn[];
   leads: Lead[];
   onEditLead?: (lead: Lead) => void;
+  onViewLead?: (lead: Lead) => void;
 }
 
-type SortField = 'name' | 'phone' | 'email' | 'createdAt' | 'status' | 'carModel' | 'cpf';
+type SortField = 'name' | 'phone' | 'email' | 'createdAt' | 'status' | 'carModel' | 'cpf' | 'address' | 'birthDate';
 type SortOrder = 'asc' | 'desc';
 
 const colorVariants = {
-  blue: 'bg-blue-100 text-blue-800 border-blue-200',
-  yellow: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  orange: 'bg-orange-100 text-orange-800 border-orange-200',
-  green: 'bg-green-100 text-green-800 border-green-200',
-  red: 'bg-red-100 text-red-800 border-red-200',
-  purple: 'bg-purple-100 text-purple-800 border-purple-200',
-  pink: 'bg-pink-100 text-pink-800 border-pink-200',
-  gray: 'bg-gray-100 text-gray-800 border-gray-200',
+  blue: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+  yellow: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300',
+  orange: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300',
+  green: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300',
+  red: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300',
+  purple: 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300',
+  pink: 'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300',
+  gray: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300',
 };
 
-const ListView = ({ columns, leads, onEditLead }: ListViewProps) => {
+const ListView = ({ columns, leads, onEditLead, onViewLead }: ListViewProps) => {
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -62,6 +63,14 @@ const ListView = ({ columns, leads, onEditLead }: ListViewProps) => {
         case 'email':
           aValue = a.email.toLowerCase();
           bValue = b.email.toLowerCase();
+          break;
+        case 'address':
+          aValue = a.address.toLowerCase();
+          bValue = b.address.toLowerCase();
+          break;
+        case 'birthDate':
+          aValue = a.birthDate || '';
+          bValue = b.birthDate || '';
           break;
         case 'createdAt':
           aValue = new Date(a.createdAt).getTime();
@@ -134,11 +143,13 @@ const ListView = ({ columns, leads, onEditLead }: ListViewProps) => {
                   <SortableHeader field="name">Nome</SortableHeader>
                   <SortableHeader field="phone">Telefone</SortableHeader>
                   <SortableHeader field="email">Email</SortableHeader>
+                  <SortableHeader field="address">Endereço</SortableHeader>
                   <SortableHeader field="cpf">CPF</SortableHeader>
-                  <SortableHeader field="carModel">Carro</SortableHeader>
-                  <SortableHeader field="createdAt">Data Criação</SortableHeader>
-                  <SortableHeader field="status">Status/Etapa</SortableHeader>
-                  <TableHead className="w-[80px]">Ações</TableHead>
+                  <SortableHeader field="carModel">Veículo</SortableHeader>
+                  <SortableHeader field="birthDate">Nascimento</SortableHeader>
+                  <SortableHeader field="createdAt">Criado em</SortableHeader>
+                  <SortableHeader field="status">Status</SortableHeader>
+                  <TableHead className="w-[120px]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -151,10 +162,21 @@ const ListView = ({ columns, leads, onEditLead }: ListViewProps) => {
                       <TableCell className="font-medium">{lead.name}</TableCell>
                       <TableCell className="font-mono">{lead.phone}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{lead.email}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{lead.address}</TableCell>
                       <TableCell className="font-mono">
                         {lead.cpf ? `***.***.***-${lead.cpf.slice(-2)}` : '-'}
                       </TableCell>
-                      <TableCell>{lead.carModel || '-'}</TableCell>
+                      <TableCell>
+                        {lead.carModel ? (
+                          <div>
+                            <div className="font-medium">{lead.carModel}</div>
+                            {lead.carPlate && <div className="text-xs text-muted-foreground">{lead.carPlate}</div>}
+                          </div>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {lead.birthDate ? new Date(lead.birthDate).toLocaleDateString('pt-BR') : '-'}
+                      </TableCell>
                       <TableCell>
                         {new Date(lead.createdAt).toLocaleDateString('pt-BR')}
                       </TableCell>
@@ -168,16 +190,30 @@ const ListView = ({ columns, leads, onEditLead }: ListViewProps) => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {onEditLead && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onEditLead(lead)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <div className="flex items-center space-x-1">
+                          {onViewLead && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onViewLead(lead)}
+                              className="h-8 w-8 p-0"
+                              title="Ver detalhes"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {onEditLead && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onEditLead(lead)}
+                              className="h-8 w-8 p-0"
+                              title="Editar"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

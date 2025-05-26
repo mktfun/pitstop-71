@@ -5,6 +5,7 @@ import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { Edit, Trash2, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import LeadCard from './LeadCard';
 import EditColumnModal from './EditColumnModal';
 import { KanbanColumn as KanbanColumnType, Lead } from '@/pages/Leads';
@@ -15,20 +16,21 @@ interface KanbanColumnProps {
   onEditColumn: (columnId: string, updates: Partial<KanbanColumnType>) => void;
   onDeleteColumn: (columnId: string) => void;
   onEditLead?: (lead: Lead) => void;
+  onViewLead?: (lead: Lead) => void;
 }
 
 const colorClasses = {
-  blue: 'border-t-blue-500 bg-blue-50/50',
-  yellow: 'border-t-yellow-500 bg-yellow-50/50',
-  orange: 'border-t-orange-500 bg-orange-50/50',
-  green: 'border-t-green-500 bg-green-50/50',
-  red: 'border-t-red-500 bg-red-50/50',
-  purple: 'border-t-purple-500 bg-purple-50/50',
-  pink: 'border-t-pink-500 bg-pink-50/50',
-  gray: 'border-t-gray-500 bg-gray-50/50',
+  blue: 'border-t-blue-500 bg-blue-50/50 dark:bg-blue-950/20',
+  yellow: 'border-t-yellow-500 bg-yellow-50/50 dark:bg-yellow-950/20',
+  orange: 'border-t-orange-500 bg-orange-50/50 dark:bg-orange-950/20',
+  green: 'border-t-green-500 bg-green-50/50 dark:bg-green-950/20',
+  red: 'border-t-red-500 bg-red-50/50 dark:bg-red-950/20',
+  purple: 'border-t-purple-500 bg-purple-50/50 dark:bg-purple-950/20',
+  pink: 'border-t-pink-500 bg-pink-50/50 dark:bg-pink-950/20',
+  gray: 'border-t-gray-500 bg-gray-50/50 dark:bg-gray-950/20',
 };
 
-const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn, onEditLead }: KanbanColumnProps) => {
+const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn, onEditLead, onViewLead }: KanbanColumnProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   const { isOver, setNodeRef: setDroppableRef } = useDroppable({
@@ -76,13 +78,15 @@ const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn, onEditLead 
           className={`p-4 border-b border-border cursor-grab active:cursor-grabbing hover:bg-muted/30 transition-colors ${colorClass}`}
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 flex-1">
               <GripVertical className="h-5 w-5 text-muted-foreground" />
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold text-foreground text-lg">{column.name}</h3>
-                <span className="text-sm text-muted-foreground font-medium">
-                  {leads.length} {leads.length === 1 ? 'lead' : 'leads'}
-                </span>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Badge variant="secondary" className="text-xs">
+                    {leads.length} {leads.length === 1 ? 'lead' : 'leads'}
+                  </Badge>
+                </div>
               </div>
             </div>
             <div className="flex items-center space-x-1 opacity-70 hover:opacity-100 transition-opacity">
@@ -93,7 +97,7 @@ const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn, onEditLead 
                   e.stopPropagation();
                   setIsEditModalOpen(true);
                 }}
-                className="h-8 w-8 p-0 hover:bg-white/50"
+                className="h-8 w-8 p-0 hover:bg-white/50 dark:hover:bg-black/20"
               >
                 <Edit className="h-4 w-4" />
               </Button>
@@ -104,7 +108,7 @@ const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn, onEditLead 
                   e.stopPropagation();
                   onDeleteColumn(column.id);
                 }}
-                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-white/50"
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-white/50 dark:hover:bg-black/20"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -120,6 +124,7 @@ const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn, onEditLead 
                 key={lead.id} 
                 lead={lead} 
                 onEdit={onEditLead}
+                onView={onViewLead}
               />
             ))}
           </SortableContext>
