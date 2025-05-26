@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, LogOut, User } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Settings, User } from 'lucide-react';
 
 const Dashboard = () => {
   const [userEmail, setUserEmail] = useState('');
@@ -34,7 +35,7 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <Settings className="h-8 w-8 text-primary" />
+          <SidebarTrigger className="md:hidden" />
           <div>
             <h1 className="text-3xl font-bold text-primary">PitStop</h1>
             <p className="text-muted-foreground">Dashboard</p>
@@ -52,7 +53,6 @@ const Dashboard = () => {
             size="sm"
             className="flex items-center space-x-2"
           >
-            <LogOut className="h-4 w-4" />
             <span>Sair</span>
           </Button>
         </div>
@@ -69,7 +69,7 @@ const Dashboard = () => {
         <CardContent>
           <p className="text-muted-foreground">
             Esta é a página do dashboard que será desenvolvida nas próximas etapas.
-            Por enquanto, você pode fazer logout e testar o sistema de login novamente.
+            Use o sidebar à esquerda para navegar entre as diferentes seções do sistema.
           </p>
         </CardContent>
       </Card>
