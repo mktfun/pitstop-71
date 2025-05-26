@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, User, Sliders, MapPin, Wrench } from 'react-feather';
+import { Settings as SettingsIcon, User, Sliders, MapPin } from 'react-feather';
+import { Wrench } from 'lucide-react';
 import UnitsManagement from '../components/settings/UnitsManagement';
 import ServicesManagement from '../components/settings/ServicesManagement';
 
