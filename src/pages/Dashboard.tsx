@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import KPICard from '@/components/dashboard/KPICard';
 import RevenueChart from '@/components/dashboard/RevenueChart';
 import AppointmentsTable from '@/components/dashboard/AppointmentsTable';
 import PermissionsTestComponent from '@/components/PermissionsTestComponent';
+import { Users, Calendar, DollarSign, CheckCircle } from 'lucide-react';
 
 const Dashboard = () => {
   return (
@@ -24,25 +26,25 @@ const Dashboard = () => {
           title="Leads Ativos"
           value="24"
           description="+12% em relação ao mês passado"
-          trend="up"
+          icon={Users}
         />
         <KPICard
           title="Agendamentos Hoje"
           value="8"
           description="3 confirmados, 5 pendentes"
-          trend="neutral"
+          icon={Calendar}
         />
         <KPICard
           title="Receita do Mês"
           value="R$ 15.430"
           description="+8% em relação ao mês passado"
-          trend="up"
+          icon={DollarSign}
         />
         <KPICard
           title="Serviços Concluídos"
           value="156"
           description="+23% em relação ao mês passado"
-          trend="up"
+          icon={CheckCircle}
         />
       </div>
 
