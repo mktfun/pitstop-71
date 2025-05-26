@@ -10,6 +10,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -27,14 +28,19 @@ interface KanbanViewProps {
   leads: Lead[];
   onColumnsChange: (columns: KanbanColumnType[]) => void;
   onLeadsChange: (leads: Lead[]) => void;
+  onEditLead?: (lead: Lead) => void;
 }
 
-const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange }: KanbanViewProps) => {
+const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange, onEditLead }: KanbanViewProps) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor)
   );
 
@@ -44,25 +50,79 @@ const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange }: KanbanVi
     setActiveId(event.active.id as string);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
-    
     if (!over) return;
 
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Check if we're dropping on a column
-    const targetColumn = columns.find(col => col.id === overId);
+    // Check if we're dragging a lead over a column
+    if (!activeId.startsWith('column-') && !overId.startsWith('column-')) {
+      const activeLead = leads.find(lead => lead.id === activeId);
+      const overLead = leads.find(lead => lead.id === overId);
+      
+      if (activeLead && overLead && activeLead.columnId !== overLead.columnId) {
+        const updatedLeads = leads.map(lead => 
+          lead.id === activeId 
+            ? { ...lead, columnId: overLead.columnId }
+            : lead
+        );
+        onLeadsChange(updatedLeads);
+      }
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
     
-    if (targetColumn) {
-      // Update the lead's columnId
-      const updatedLeads = leads.map(lead => 
-        lead.id === activeId 
-          ? { ...lead, columnId: targetColumn.id }
-          : lead
-      );
-      onLeadsChange(updatedLeads);
+    if (!over) {
+      setActiveId(null);
+      return;
+    }
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Handle column reordering
+    if (activeId.startsWith('column-') && overId.startsWith('column-')) {
+      const activeColumnId = activeId.replace('column-', '');
+      const overColumnId = overId.replace('column-', '');
+      
+      if (activeColumnId !== overColumnId) {
+        const activeColumn = columns.find(col => col.id === activeColumnId);
+        const overColumn = columns.find(col => col.id === overColumnId);
+        
+        if (activeColumn && overColumn) {
+          const activeIndex = sortedColumns.findIndex(col => col.id === activeColumnId);
+          const overIndex = sortedColumns.findIndex(col => col.id === overColumnId);
+          
+          const newColumns = [...sortedColumns];
+          newColumns.splice(activeIndex, 1);
+          newColumns.splice(overIndex, 0, activeColumn);
+          
+          // Update order property
+          const updatedColumns = newColumns.map((col, index) => ({
+            ...col,
+            order: index
+          }));
+          
+          onColumnsChange(updatedColumns);
+        }
+      }
+    }
+    // Handle lead drop on column
+    else if (!activeId.startsWith('column-')) {
+      const targetColumn = columns.find(col => col.id === overId);
+      
+      if (targetColumn) {
+        const updatedLeads = leads.map(lead => 
+          lead.id === activeId 
+            ? { ...lead, columnId: targetColumn.id }
+            : lead
+        );
+        onLeadsChange(updatedLeads);
+      }
     }
 
     setActiveId(null);
@@ -98,15 +158,19 @@ const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange }: KanbanVi
           : lead
       );
       
-      // Remove the column
-      const updatedColumns = columns.filter(col => col.id !== columnId);
+      // Remove the column and reorder
+      const updatedColumns = columns
+        .filter(col => col.id !== columnId)
+        .map((col, index) => ({ ...col, order: index }));
       
       onLeadsChange(updatedLeads);
       onColumnsChange(updatedColumns);
     }
   };
 
-  const activeCard = activeId ? leads.find(lead => lead.id === activeId) : null;
+  const activeCard = activeId && !activeId.startsWith('column-') 
+    ? leads.find(lead => lead.id === activeId) 
+    : null;
 
   return (
     <div className="h-full">
@@ -114,10 +178,14 @@ const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange }: KanbanVi
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex space-x-4 overflow-x-auto pb-4">
-          <SortableContext items={sortedColumns.map(col => col.id)} strategy={horizontalListSortingStrategy}>
+        <div className="flex space-x-6 overflow-x-auto pb-4">
+          <SortableContext 
+            items={sortedColumns.map(col => `column-${col.id}`)} 
+            strategy={horizontalListSortingStrategy}
+          >
             {sortedColumns.map(column => (
               <KanbanColumn
                 key={column.id}
@@ -125,18 +193,19 @@ const KanbanView = ({ columns, leads, onColumnsChange, onLeadsChange }: KanbanVi
                 leads={leads.filter(lead => lead.columnId === column.id)}
                 onEditColumn={handleEditColumn}
                 onDeleteColumn={handleDeleteColumn}
+                onEditLead={onEditLead}
               />
             ))}
           </SortableContext>
           
           {/* Add Column Button */}
-          <div className="min-w-[280px]">
+          <div className="min-w-[320px] flex-shrink-0">
             <Button
               variant="outline"
-              className="w-full h-12 border-dashed"
+              className="w-full h-16 border-dashed border-2 hover:border-primary/50 hover:bg-muted/50 transition-colors"
               onClick={() => setIsAddColumnModalOpen(true)}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-5 w-5 mr-2" />
               Adicionar Coluna
             </Button>
           </div>

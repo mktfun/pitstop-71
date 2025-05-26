@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { useDroppable } from '@dnd-kit/core';
+import { useDroppable, useSortable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Edit, Trash2 } from 'lucide-react';
+import { CSS } from '@dnd-kit/utilities';
+import { Edit, Trash2, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LeadCard from './LeadCard';
 import EditColumnModal from './EditColumnModal';
@@ -13,48 +14,83 @@ interface KanbanColumnProps {
   leads: Lead[];
   onEditColumn: (columnId: string, updates: Partial<KanbanColumnType>) => void;
   onDeleteColumn: (columnId: string) => void;
+  onEditLead?: (lead: Lead) => void;
 }
 
 const colorClasses = {
-  blue: 'bg-blue-100 border-blue-200',
-  yellow: 'bg-yellow-100 border-yellow-200',
-  orange: 'bg-orange-100 border-orange-200',
-  green: 'bg-green-100 border-green-200',
-  red: 'bg-red-100 border-red-200',
-  purple: 'bg-purple-100 border-purple-200',
-  pink: 'bg-pink-100 border-pink-200',
-  gray: 'bg-gray-100 border-gray-200',
+  blue: 'border-t-blue-500',
+  yellow: 'border-t-yellow-500',
+  orange: 'border-t-orange-500',
+  green: 'border-t-green-500',
+  red: 'border-t-red-500',
+  purple: 'border-t-purple-500',
+  pink: 'border-t-pink-500',
+  gray: 'border-t-gray-500',
 };
 
-const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn }: KanbanColumnProps) => {
+const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn, onEditLead }: KanbanColumnProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
-  const { isOver, setNodeRef } = useDroppable({
+  const { isOver, setNodeRef: setDroppableRef } = useDroppable({
     id: column.id,
   });
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setSortableRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: `column-${column.id}`,
+    data: {
+      type: 'column',
+      column,
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   const colorClass = colorClasses[column.color as keyof typeof colorClasses] || colorClasses.gray;
 
   return (
-    <div className="min-w-[280px]">
+    <div
+      ref={setSortableRef}
+      style={style}
+      className={`min-w-[320px] ${isDragging ? 'opacity-50' : ''}`}
+    >
       <div
-        ref={setNodeRef}
-        className={`rounded-lg border-2 ${colorClass} ${
-          isOver ? 'border-primary' : ''
-        } transition-colors duration-200`}
+        ref={setDroppableRef}
+        className={`rounded-lg border-2 bg-muted/30 ${colorClass} border-t-4 ${
+          isOver ? 'border-primary' : 'border-border'
+        } transition-all duration-200`}
       >
         {/* Column Header */}
-        <div className="p-4 border-b border-current/20">
+        <div
+          {...attributes}
+          {...listeners}
+          className="p-4 border-b border-border cursor-grab active:cursor-grabbing hover:bg-muted/50 transition-colors"
+        >
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-gray-800">{column.name}</h3>
-              <span className="text-sm text-gray-600">{leads.length} leads</span>
+            <div className="flex items-center space-x-2">
+              <GripVertical className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <h3 className="font-semibold text-foreground">{column.name}</h3>
+                <span className="text-sm text-muted-foreground">{leads.length} leads</span>
+              </div>
             </div>
             <div className="flex items-center space-x-1">
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setIsEditModalOpen(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditModalOpen(true);
+                }}
                 className="h-8 w-8 p-0"
               >
                 <Edit className="h-4 w-4" />
@@ -62,8 +98,11 @@ const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn }: KanbanCol
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => onDeleteColumn(column.id)}
-                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteColumn(column.id);
+                }}
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -72,15 +111,19 @@ const KanbanColumn = ({ column, leads, onEditColumn, onDeleteColumn }: KanbanCol
         </div>
 
         {/* Column Content */}
-        <div className="p-4 space-y-3 min-h-[200px]">
+        <div className="p-4 space-y-3 min-h-[200px] bg-background/50">
           <SortableContext items={leads.map(lead => lead.id)} strategy={verticalListSortingStrategy}>
             {leads.map(lead => (
-              <LeadCard key={lead.id} lead={lead} />
+              <LeadCard 
+                key={lead.id} 
+                lead={lead} 
+                onEdit={onEditLead}
+              />
             ))}
           </SortableContext>
           
           {leads.length === 0 && (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-muted-foreground py-8">
               <p className="text-sm">Nenhum lead nesta etapa</p>
             </div>
           )}

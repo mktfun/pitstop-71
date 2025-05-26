@@ -17,7 +17,13 @@ export interface KanbanColumn {
 export interface Lead {
   id: string;
   name: string;
-  contact: string;
+  phone: string;
+  email: string;
+  address: string;
+  birthDate: string;
+  cpf: string;
+  carModel?: string;
+  carPlate?: string;
   createdAt: string;
   columnId: string;
 }
@@ -29,6 +35,7 @@ const Leads = () => {
   const [columns, setColumns] = useState<KanbanColumn[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isAddLeadModalOpen, setIsAddLeadModalOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     loadData();
@@ -72,17 +79,33 @@ const Leads = () => {
     localStorage.setItem('pitstop_leads', JSON.stringify(newLeads));
   };
 
-  const handleAddLead = (leadData: { name: string; contact: string }) => {
+  const handleAddLead = (leadData: Omit<Lead, 'id' | 'createdAt' | 'columnId'>) => {
     const newLead: Lead = {
+      ...leadData,
       id: `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: leadData.name,
-      contact: leadData.contact,
       createdAt: new Date().toISOString(),
       columnId: columns[0]?.id || 'prospecto'
     };
 
     saveLeads([...leads, newLead]);
     setIsAddLeadModalOpen(false);
+  };
+
+  const handleEditLead = (leadData: Omit<Lead, 'id' | 'createdAt' | 'columnId'>) => {
+    if (!editingLead) return;
+
+    const updatedLeads = leads.map(lead =>
+      lead.id === editingLead.id
+        ? { ...lead, ...leadData }
+        : lead
+    );
+
+    saveLeads(updatedLeads);
+    setEditingLead(null);
+  };
+
+  const openEditModal = (lead: Lead) => {
+    setEditingLead(lead);
   };
 
   return (
@@ -131,19 +154,25 @@ const Leads = () => {
           leads={leads}
           onColumnsChange={saveColumns}
           onLeadsChange={saveLeads}
+          onEditLead={openEditModal}
         />
       ) : (
         <ListView
           columns={columns}
           leads={leads}
+          onEditLead={openEditModal}
         />
       )}
 
-      {/* Add Lead Modal */}
+      {/* Add/Edit Lead Modal */}
       <AddLeadModal
-        isOpen={isAddLeadModalOpen}
-        onClose={() => setIsAddLeadModalOpen(false)}
-        onSave={handleAddLead}
+        isOpen={isAddLeadModalOpen || !!editingLead}
+        onClose={() => {
+          setIsAddLeadModalOpen(false);
+          setEditingLead(null);
+        }}
+        onSave={editingLead ? handleEditLead : handleAddLead}
+        editingLead={editingLead}
       />
     </div>
   );
