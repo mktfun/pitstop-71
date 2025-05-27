@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
@@ -275,7 +274,6 @@ const Appointments = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <SidebarTrigger className="md:hidden" />
           <div>
             <h1 className="text-3xl font-bold text-foreground">Agendamentos</h1>
             <p className="text-muted-foreground">Gerencie os agendamentos da oficina</p>
