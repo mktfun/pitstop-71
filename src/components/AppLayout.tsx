@@ -3,15 +3,15 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import { useAuth } from '@/hooks/useAuth';
-import { useAppearance } from '@/hooks/useAppearance';
+import { useAppearanceSettings } from '@/hooks/useAppearanceSettings';
 
 const AppLayout = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
   
-  // Inicializar configurações de aparência
-  const { settings, applySettings } = useAppearance();
+  // Inicializar configurações de aparência usando o novo hook
+  useAppearanceSettings();
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);

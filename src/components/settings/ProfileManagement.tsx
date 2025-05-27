@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { User, Camera, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,53 +7,31 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-
-interface UserProfile {
-  name: string;
-  email: string;
-  phone: string;
-  role: string;
-  avatarBase64: string;
-}
+import { useUserProfile } from '@/hooks/useUserProfile';
+import type { UserProfile } from '@/services/profileService';
 
 const ProfileManagement = () => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { profile, isLoading, updateProfile } = useUserProfile();
   
-  const [profile, setProfile] = useState<UserProfile>({
-    name: '',
-    email: '',
-    phone: '',
-    role: '',
-    avatarBase64: ''
+  const [formData, setFormData] = useState<UserProfile>({
+    name: profile?.name || '',
+    email: profile?.email || '',
+    phone: profile?.phone || '',
+    role: profile?.role || '',
+    avatarBase64: profile?.avatarBase64 || ''
   });
-  
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Carregar dados do localStorage ao montar o componente
-  useEffect(() => {
-    loadProfileData();
-  }, []);
-
-  const loadProfileData = () => {
-    try {
-      const savedProfile = localStorage.getItem('pitstop_user_profile');
-      if (savedProfile) {
-        const parsedProfile = JSON.parse(savedProfile);
-        setProfile(parsedProfile);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados do perfil:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar dados do perfil.",
-        variant: "destructive"
-      });
+  // Atualizar form quando profile carrega
+  React.useEffect(() => {
+    if (profile) {
+      setFormData(profile);
     }
-  };
+  }, [profile]);
 
   const handleInputChange = (field: keyof UserProfile, value: string) => {
-    setProfile(prev => ({
+    setFormData(prev => ({
       ...prev,
       [field]: value
     }));
@@ -89,7 +67,7 @@ const ProfileManagement = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64String = e.target?.result as string;
-      setProfile(prev => ({
+      setFormData(prev => ({
         ...prev,
         avatarBase64: base64String
       }));
@@ -98,25 +76,10 @@ const ProfileManagement = () => {
   };
 
   const handleSaveProfile = async () => {
-    setIsLoading(true);
-    
     try {
-      // Salvar no localStorage
-      localStorage.setItem('pitstop_user_profile', JSON.stringify(profile));
-      
-      toast({
-        title: "Sucesso",
-        description: "Perfil salvo com sucesso!"
-      });
+      await updateProfile(formData);
     } catch (error) {
-      console.error('Erro ao salvar perfil:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar o perfil. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+      // Error handling is done in the hook
     }
   };
 
@@ -148,11 +111,11 @@ const ProfileManagement = () => {
           <div className="flex flex-col items-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-6">
             <div className="relative">
               <Avatar className="h-24 w-24">
-                {profile.avatarBase64 ? (
-                  <AvatarImage src={profile.avatarBase64} alt="Avatar do usuário" />
+                {formData.avatarBase64 ? (
+                  <AvatarImage src={formData.avatarBase64} alt="Avatar do usuário" />
                 ) : (
                   <AvatarFallback className="text-lg">
-                    {profile.name ? profile.name.charAt(0).toUpperCase() : <User className="h-8 w-8" />}
+                    {formData.name ? formData.name.charAt(0).toUpperCase() : <User className="h-8 w-8" />}
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -190,7 +153,7 @@ const ProfileManagement = () => {
               <Input
                 id="name"
                 placeholder="Digite seu nome"
-                value={profile.name}
+                value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
               />
             </div>
@@ -201,7 +164,7 @@ const ProfileManagement = () => {
                 id="email"
                 type="email"
                 placeholder="Digite seu e-mail"
-                value={profile.email}
+                value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
               />
             </div>
@@ -211,7 +174,7 @@ const ProfileManagement = () => {
               <Input
                 id="phone"
                 placeholder="(XX) XXXXX-XXXX"
-                value={profile.phone}
+                value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
               />
             </div>
@@ -221,7 +184,7 @@ const ProfileManagement = () => {
               <Input
                 id="role"
                 placeholder="Digite seu cargo"
-                value={profile.role}
+                value={formData.role}
                 onChange={(e) => handleInputChange('role', e.target.value)}
               />
             </div>
