@@ -4,6 +4,7 @@ import { Settings as SettingsIcon, User, Sliders, MapPin } from 'react-feather';
 import { Wrench } from 'lucide-react';
 import UnitsManagement from '../components/settings/UnitsManagement';
 import ServicesManagement from '../components/settings/ServicesManagement';
+import ProfileManagement from '../components/settings/ProfileManagement';
 
 type SettingsSection = 'profile' | 'appearance' | 'units' | 'services';
 
@@ -13,19 +14,7 @@ const Settings = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'profile':
-        return (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="bg-accent/50 rounded-full p-4 mb-4">
-              <User className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">
-              Perfil do Usuário
-            </h2>
-            <p className="text-muted-foreground max-w-md">
-              Configure suas informações pessoais e preferências de conta.
-            </p>
-          </div>
-        );
+        return <ProfileManagement />;
       case 'appearance':
         return (
           <div className="flex flex-col items-center justify-center h-full text-center">
