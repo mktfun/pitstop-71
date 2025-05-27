@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppearanceSettings } from '@/hooks/useAppearanceSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 const AppLayout = () => {
   const { user, isLoading } = useAuth();
@@ -22,35 +23,23 @@ const AppLayout = () => {
       console.log('Verificando necessidade de onboarding para usuário:', user);
       
       // Verificar se usuário precisa de onboarding
-      const checkOnboardingNeeded = () => {
+      const checkOnboardingNeeded = async () => {
         try {
-          // Ler associações de usuário-organização
-          const userOrgAssociations = JSON.parse(
-            localStorage.getItem('pitstop_user_org_associations') || '[]'
-          );
-          
-          // Verificar se usuário tem associação
-          const hasAssociation = userOrgAssociations.some(
-            (assoc: any) => assoc.userId === user.id
-          );
+          // Verificar se usuário tem associação com alguma organização
+          const { data: userRoles, error } = await supabase
+            .from('user_organization_roles')
+            .select('organization_id')
+            .eq('user_id', user.id);
 
-          // Ler convites pendentes
-          const invitations = JSON.parse(
-            localStorage.getItem('pitstop_invitations') || '[]'
-          );
-          
-          // Verificar se usuário tem convite pendente
-          const hasPendingInvitation = invitations.some(
-            (invitation: any) => 
-              invitation.invitedEmail === user.email && 
-              invitation.status === 'pending'
-          );
+          if (error) {
+            console.error('Erro ao verificar associações:', error);
+            return;
+          }
 
-          console.log('hasAssociation:', hasAssociation);
-          console.log('hasPendingInvitation:', hasPendingInvitation);
+          console.log('User roles found:', userRoles);
 
-          // Se não tem associação E não tem convite pendente, redirecionar para onboarding
-          if (!hasAssociation && !hasPendingInvitation) {
+          // Se não tem associação, redirecionar para onboarding
+          if (!userRoles || userRoles.length === 0) {
             console.log('Redirecionando para onboarding...');
             navigate('/onboarding/organizacao');
           }

@@ -7,23 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-
-interface Organization {
-  id: string;
-  name: string;
-  cnpj: string;
-  phone: string;
-  logoUrl: string | null;
-  ownerUserId: string;
-  createdAt: string;
-}
-
-interface UserOrgAssociation {
-  userId: string;
-  organizationId: string;
-  role: string;
-  joinedAt: string;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 const OnboardingOrgStep = () => {
   const [name, setName] = useState('');
@@ -88,47 +72,41 @@ const OnboardingOrgStep = () => {
     setIsLoading(true);
 
     try {
-      // Gerar IDs e timestamps
-      const orgId = `org-${Date.now()}`;
-      const createdAt = new Date().toISOString();
+      // Criar organização no Supabase
+      const { data: orgData, error: orgError } = await supabase
+        .from('organizations')
+        .insert({
+          name: name.trim(),
+          cnpj: cnpj.trim() || null,
+          phone: phone.trim() || null,
+          logo_url: logoUrl.trim() || null,
+          owner_user_id: user.id
+        })
+        .select()
+        .single();
 
-      // Criar objeto da organização
-      const newOrg: Organization = {
-        id: orgId,
-        name: name.trim(),
-        cnpj: cnpj.trim(),
-        phone: phone.trim(),
-        logoUrl: logoUrl.trim() || null,
-        ownerUserId: user.id,
-        createdAt
-      };
+      if (orgError) throw orgError;
 
-      // Ler organizações existentes e adicionar nova
-      const existingOrgs = JSON.parse(localStorage.getItem('pitstop_organizations') || '[]');
-      existingOrgs.push(newOrg);
-      localStorage.setItem('pitstop_organizations', JSON.stringify(existingOrgs));
+      console.log('Organização criada:', orgData);
 
       // Criar associação usuário-organização
-      const newAssoc: UserOrgAssociation = {
-        userId: user.id,
-        organizationId: orgId,
-        role: 'owner',
-        joinedAt: createdAt
-      };
+      const { error: roleError } = await supabase
+        .from('user_organization_roles')
+        .insert({
+          user_id: user.id,
+          organization_id: orgData.id,
+          role: 'owner'
+        });
 
-      // Ler associações existentes e adicionar nova
-      const existingAssocs = JSON.parse(localStorage.getItem('pitstop_user_org_associations') || '[]');
-      existingAssocs.push(newAssoc);
-      localStorage.setItem('pitstop_user_org_associations', JSON.stringify(existingAssocs));
+      if (roleError) throw roleError;
 
-      console.log('Organização criada:', newOrg);
-      console.log('Associação criada:', newAssoc);
+      console.log('Associação criada com sucesso');
 
       // Navegar para próxima etapa
-      navigate('/onboarding/unidade', { state: { orgId } });
-    } catch (err) {
+      navigate('/onboarding/unidade', { state: { orgId: orgData.id } });
+    } catch (err: any) {
       console.error('Erro ao criar organização:', err);
-      setError('Erro ao salvar organização. Tente novamente.');
+      setError(err.message || 'Erro ao salvar organização. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

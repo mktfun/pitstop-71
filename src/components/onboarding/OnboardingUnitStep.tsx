@@ -6,15 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Loader2 } from 'lucide-react';
-
-interface Unit {
-  id: string;
-  name: string;
-  address: string;
-  phone: string;
-  organizationId: string;
-  createdAt: string;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 const OnboardingUnitStep = () => {
   const [name, setName] = useState('');
@@ -66,37 +58,32 @@ const OnboardingUnitStep = () => {
     setIsLoading(true);
 
     try {
-      // Gerar IDs e timestamps
-      const unitId = `unit-${Date.now()}`;
-      const createdAt = new Date().toISOString();
+      // Criar unidade no Supabase
+      const { data: unitData, error: unitError } = await supabase
+        .from('units')
+        .insert({
+          name: name.trim(),
+          address: address.trim() || null,
+          phone: phone.trim() || null,
+          organization_id: organizationId
+        })
+        .select()
+        .single();
 
-      // Criar objeto da unidade
-      const newUnit: Unit = {
-        id: unitId,
-        name: name.trim(),
-        address: address.trim(),
-        phone: phone.trim(),
-        organizationId: organizationId,
-        createdAt
-      };
+      if (unitError) throw unitError;
 
-      // Ler unidades existentes e adicionar nova
-      const existingUnits = JSON.parse(localStorage.getItem('pitstop_units') || '[]');
-      existingUnits.push(newUnit);
-      localStorage.setItem('pitstop_units', JSON.stringify(existingUnits));
-
-      console.log('Unidade criada:', newUnit);
+      console.log('Unidade criada:', unitData);
 
       // Navegar para próxima etapa
       navigate('/onboarding/convites', { 
         state: { 
           orgId: organizationId,
-          unitId: unitId
+          unitId: unitData.id
         } 
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao criar unidade:', err);
-      setError('Erro ao salvar unidade. Tente novamente.');
+      setError(err.message || 'Erro ao salvar unidade. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

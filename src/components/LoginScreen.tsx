@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Mail, Lock, AlertCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -19,18 +20,24 @@ const LoginScreen = () => {
     setIsLoading(true);
     setError('');
 
-    // Simular delay de autenticação
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (email === 'teste@teste.com' && password === '123456') {
-      localStorage.setItem('loggedIn', 'true');
-      localStorage.setItem('userEmail', email);
-      navigate('/dashboard');
-    } else {
-      setError('Email ou senha inválidos.');
+      if (authError) {
+        setError(authError.message);
+      } else {
+        // Navigation will be handled by the auth state change in AppLayout
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Erro inesperado. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -146,13 +153,10 @@ const LoginScreen = () => {
           <CardContent className="pt-4">
             <div className="text-center space-y-1">
               <h3 className="font-semibold text-sm text-muted-foreground">
-                Credenciais de Demonstração
+                Crie uma conta para começar
               </h3>
               <p className="text-xs text-muted-foreground">
-                Email: <span className="font-mono bg-background px-1 rounded">teste@teste.com</span>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Senha: <span className="font-mono bg-background px-1 rounded">123456</span>
+                Use seu email e senha para fazer login
               </p>
             </div>
           </CardContent>
