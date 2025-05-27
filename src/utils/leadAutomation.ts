@@ -1,51 +1,48 @@
-import { Lead, LeadHistoryEntry } from '@/pages/Leads';
+
+import { supabase } from '@/integrations/supabase/client';
 
 export interface LeadUpdateParams {
   leadId: string;
   newColumnId: string;
   historyType: string;
   historyDescription: string;
+  userId?: string;
 }
 
 /**
- * Atualiza o status de um lead no Kanban e adiciona entrada ao histórico
+ * Atualiza o status de um lead no Kanban e adiciona entrada ao histórico usando Supabase
  */
-export const updateLeadStatus = (params: LeadUpdateParams): boolean => {
-  const { leadId, newColumnId, historyType, historyDescription } = params;
+export const updateLeadStatus = async (params: LeadUpdateParams): Promise<boolean> => {
+  const { leadId, newColumnId, historyType, historyDescription, userId } = params;
   
   try {
-    // Ler leads do localStorage
-    const storedLeads = localStorage.getItem('pitstop_leads');
-    if (!storedLeads) {
-      console.error('Nenhum lead encontrado no localStorage');
+    // Atualizar columnId do lead
+    const { error: updateError } = await supabase
+      .from('leads')
+      .update({ column_id: newColumnId })
+      .eq('id', leadId);
+
+    if (updateError) {
+      console.error('Erro ao atualizar status do lead:', updateError);
       return false;
     }
-
-    const leads: Lead[] = JSON.parse(storedLeads);
-    
-    // Encontrar o lead
-    const leadIndex = leads.findIndex(lead => lead.id === leadId);
-    if (leadIndex === -1) {
-      console.error(`Lead com ID ${leadId} não encontrado`);
-      return false;
-    }
-
-    // Atualizar columnId
-    leads[leadIndex].columnId = newColumnId;
 
     // Adicionar entrada ao histórico
-    const historyEntry: LeadHistoryEntry = {
-      timestamp: new Date().toISOString(),
-      type: historyType,
-      description: historyDescription
-    };
+    const { error: historyError } = await supabase
+      .from('lead_history')
+      .insert({
+        lead_id: leadId,
+        type: historyType,
+        description: historyDescription,
+        user_id: userId
+      });
 
-    leads[leadIndex].history = [historyEntry, ...leads[leadIndex].history];
+    if (historyError) {
+      console.error('Erro ao adicionar entrada ao histórico:', historyError);
+      return false;
+    }
 
-    // Salvar de volta no localStorage
-    localStorage.setItem('pitstop_leads', JSON.stringify(leads));
-    
-    console.log(`Lead ${leadId} atualizado para coluna ${newColumnId}:`, historyEntry);
+    console.log(`Lead ${leadId} atualizado para coluna ${newColumnId}`);
     return true;
 
   } catch (error) {
@@ -57,27 +54,21 @@ export const updateLeadStatus = (params: LeadUpdateParams): boolean => {
 /**
  * Adiciona apenas uma entrada ao histórico do lead (sem mudar columnId)
  */
-export const addLeadHistoryEntry = (leadId: string, type: string, description: string): boolean => {
+export const addLeadHistoryEntry = async (leadId: string, type: string, description: string, userId?: string): Promise<boolean> => {
   try {
-    const storedLeads = localStorage.getItem('pitstop_leads');
-    if (!storedLeads) return false;
+    const { error } = await supabase
+      .from('lead_history')
+      .insert({
+        lead_id: leadId,
+        type,
+        description,
+        user_id: userId
+      });
 
-    const leads: Lead[] = JSON.parse(storedLeads);
-    const leadIndex = leads.findIndex(lead => lead.id === leadId);
-    
-    if (leadIndex === -1) {
-      console.error(`Lead com ID ${leadId} não encontrado`);
+    if (error) {
+      console.error('Erro ao adicionar entrada ao histórico:', error);
       return false;
     }
-
-    const historyEntry: LeadHistoryEntry = {
-      timestamp: new Date().toISOString(),
-      type,
-      description
-    };
-
-    leads[leadIndex].history = [historyEntry, ...leads[leadIndex].history];
-    localStorage.setItem('pitstop_leads', JSON.stringify(leads));
     
     return true;
   } catch (error) {
@@ -87,15 +78,31 @@ export const addLeadHistoryEntry = (leadId: string, type: string, description: s
 };
 
 /**
- * Obtém um lead específico do localStorage
+ * Obtém um lead específico do Supabase
  */
-export const getLeadById = (leadId: string): Lead | null => {
+export const getLeadById = async (leadId: string) => {
   try {
-    const storedLeads = localStorage.getItem('pitstop_leads');
-    if (!storedLeads) return null;
+    const { data: lead, error } = await supabase
+      .from('leads')
+      .select(`
+        *,
+        lead_history (
+          id,
+          timestamp,
+          type,
+          description,
+          user_id
+        )
+      `)
+      .eq('id', leadId)
+      .single();
 
-    const leads: Lead[] = JSON.parse(storedLeads);
-    return leads.find(lead => lead.id === leadId) || null;
+    if (error) {
+      console.error('Erro ao obter lead:', error);
+      return null;
+    }
+
+    return lead;
   } catch (error) {
     console.error('Erro ao obter lead:', error);
     return null;
