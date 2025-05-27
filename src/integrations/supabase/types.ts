@@ -9,6 +9,152 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      kanban_columns: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          order: number
+          organization_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id: string
+          name: string
+          order?: number
+          organization_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          order?: number
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_columns_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_history: {
+        Row: {
+          description: string
+          id: string
+          lead_id: string
+          timestamp: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          description: string
+          id?: string
+          lead_id: string
+          timestamp?: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          description?: string
+          id?: string
+          lead_id?: string
+          timestamp?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          address: string | null
+          assigned_user_id: string | null
+          birth_date: string | null
+          car_model: string | null
+          car_plate: string | null
+          column_id: string | null
+          cpf: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          organization_id: string
+          phone: string | null
+          unit_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          assigned_user_id?: string | null
+          birth_date?: string | null
+          car_model?: string | null
+          car_plate?: string | null
+          column_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          phone?: string | null
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          assigned_user_id?: string | null
+          birth_date?: string | null
+          car_model?: string | null
+          car_plate?: string | null
+          column_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          phone?: string | null
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_columns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           cnpj: string | null
