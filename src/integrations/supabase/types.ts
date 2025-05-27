@@ -9,6 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          appointment_date: string
+          created_at: string
+          id: string
+          lead_id: string
+          notes: string | null
+          organization_id: string
+          service_id: string | null
+          service_name: string | null
+          status: string | null
+          unit_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          appointment_date: string
+          created_at?: string
+          id?: string
+          lead_id: string
+          notes?: string | null
+          organization_id: string
+          service_id?: string | null
+          service_name?: string | null
+          status?: string | null
+          unit_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          appointment_date?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          organization_id?: string
+          service_id?: string | null
+          service_name?: string | null
+          status?: string | null
+          unit_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kanban_columns: {
         Row: {
           color: string | null
@@ -188,6 +262,197 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          active_organization_id: string | null
+          avatar_url: string | null
+          id: string
+          name: string | null
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          active_organization_id?: string | null
+          avatar_url?: string | null
+          id: string
+          name?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active_organization_id?: string | null
+          avatar_url?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_active_organization"
+            columns: ["active_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          price_at_order: number
+          quantity: number
+          service_id: string | null
+          service_name: string
+          service_order_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          price_at_order: number
+          quantity?: number
+          service_id?: string | null
+          service_name: string
+          service_order_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          price_at_order?: number
+          quantity?: number
+          service_id?: string | null
+          service_name?: string
+          service_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_order_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_order_items_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_orders: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string
+          id: string
+          lead_id: string
+          notes: string | null
+          organization_id: string
+          status: string | null
+          total_cost: number | null
+          unit_id: string | null
+          updated_at: string
+          user_id: string | null
+          vehicle_info: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          lead_id: string
+          notes?: string | null
+          organization_id: string
+          status?: string | null
+          total_cost?: number | null
+          unit_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          vehicle_info?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          organization_id?: string
+          status?: string | null
+          total_cost?: number | null
+          unit_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          vehicle_info?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_orders_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       units: {
         Row: {
           address: string | null
@@ -225,6 +490,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_appearance_settings: {
+        Row: {
+          density: string | null
+          font_size: string | null
+          mode: string | null
+          palette: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          density?: string | null
+          font_size?: string | null
+          mode?: string | null
+          palette?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          density?: string | null
+          font_size?: string | null
+          mode?: string | null
+          palette?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_organization_roles: {
         Row: {

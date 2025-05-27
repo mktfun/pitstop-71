@@ -3,70 +3,51 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-interface Organization {
-  id: string;
-  name: string;
-  cnpj?: string;
-  phone?: string;
-  logo_url?: string;
-  owner_user_id: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export const useActiveOrganization = () => {
   const { user } = useAuth();
-  const [organization, setOrganization] = useState<Organization | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchActiveOrganization = async () => {
+    const getActiveOrganization = async () => {
       if (!user) {
+        setOrganizationId(null);
         setIsLoading(false);
         return;
       }
 
       try {
-        // Buscar a primeira organização do usuário
-        const { data: userRoles, error: rolesError } = await supabase
-          .from('user_organization_roles')
-          .select(`
-            organization_id,
-            organizations (
-              id,
-              name,
-              cnpj,
-              phone,
-              logo_url,
-              owner_user_id,
-              created_at,
-              updated_at
-            )
-          `)
-          .eq('user_id', user.id)
-          .limit(1)
+        // First try to get from user profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('active_organization_id')
+          .eq('id', user.id)
           .single();
 
-        if (rolesError) {
-          console.error('Erro ao buscar organização:', rolesError);
-          setError('Erro ao carregar organização');
-          return;
-        }
+        if (profile?.active_organization_id) {
+          setOrganizationId(profile.active_organization_id);
+        } else {
+          // Fallback: get the first organization the user belongs to
+          const { data: userRole } = await supabase
+            .from('user_organization_roles')
+            .select('organization_id')
+            .eq('user_id', user.id)
+            .limit(1)
+            .single();
 
-        if (userRoles?.organizations) {
-          setOrganization(userRoles.organizations as Organization);
+          if (userRole?.organization_id) {
+            setOrganizationId(userRole.organization_id);
+          }
         }
       } catch (error) {
-        console.error('Erro ao buscar organização ativa:', error);
-        setError('Erro ao carregar organização');
+        console.error('Error getting active organization:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchActiveOrganization();
+    getActiveOrganization();
   }, [user]);
 
-  return { organization, isLoading, error };
+  return { organizationId, isLoading };
 };
