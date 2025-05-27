@@ -5,6 +5,7 @@ import { Wrench } from 'lucide-react';
 import UnitsManagement from '../components/settings/UnitsManagement';
 import ServicesManagement from '../components/settings/ServicesManagement';
 import ProfileManagement from '../components/settings/ProfileManagement';
+import AppearanceManagement from '../components/settings/AppearanceManagement';
 
 type SettingsSection = 'profile' | 'appearance' | 'units' | 'services';
 
@@ -16,19 +17,7 @@ const Settings = () => {
       case 'profile':
         return <ProfileManagement />;
       case 'appearance':
-        return (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="bg-accent/50 rounded-full p-4 mb-4">
-              <Sliders className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">
-              Aparência
-            </h2>
-            <p className="text-muted-foreground max-w-md">
-              Personalize a aparência do sistema, incluindo tema claro/escuro.
-            </p>
-          </div>
-        );
+        return <AppearanceManagement />;
       case 'units':
         return <UnitsManagement />;
       case 'services':
