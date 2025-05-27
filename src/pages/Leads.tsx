@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Kanban, List, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -230,7 +229,7 @@ const Leads = () => {
     }
   };
 
-  const handleAddLead = async (leadData: Omit<Lead, 'id' | 'createdAt' | 'columnId' | 'history' | 'organizationId'>) => {
+  const handleAddLead = async (leadData: Omit<Lead, 'id' | 'createdAt' | 'columnId' | 'history'>) => {
     if (!organization || !user) return;
 
     try {
@@ -286,7 +285,7 @@ const Leads = () => {
     }
   };
 
-  const handleEditLead = async (leadData: Omit<Lead, 'id' | 'createdAt' | 'columnId' | 'history' | 'organizationId'>) => {
+  const handleEditLead = async (leadData: Omit<Lead, 'id' | 'createdAt' | 'columnId' | 'history'>) => {
     if (!editingLead || !user) return;
 
     try {
@@ -499,6 +498,7 @@ const Leads = () => {
         }}
         onSave={editingLead ? handleEditLead : handleAddLead}
         editingLead={editingLead}
+        organizationId={organization?.id || ''}
       />
 
       {/* Lead Details Modal */}

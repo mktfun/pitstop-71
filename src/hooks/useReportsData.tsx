@@ -40,7 +40,7 @@ export interface ReportUnit {
 }
 
 export const useReportsData = () => {
-  const { organizationId } = useActiveOrganization();
+  const { organization } = useActiveOrganization();
   const [leads, setLeads] = useState<ReportLead[]>([]);
   const [appointments, setAppointments] = useState<ReportAppointment[]>([]);
   const [serviceOrders, setServiceOrders] = useState<ReportServiceOrder[]>([]);
@@ -50,7 +50,7 @@ export const useReportsData = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!organizationId) {
+      if (!organization) {
         setIsLoading(false);
         return;
       }
@@ -64,22 +64,22 @@ export const useReportsData = () => {
           supabase
             .from('leads')
             .select('id, name, email, phone, created_at, column_id, unit_id')
-            .eq('organization_id', organizationId),
+            .eq('organization_id', organization.id),
           
           supabase
             .from('appointments')
             .select('id, lead_id, service_name, appointment_date, status, created_at, unit_id')
-            .eq('organization_id', organizationId),
+            .eq('organization_id', organization.id),
           
           supabase
             .from('service_orders')
             .select('id, lead_id, description, status, total_cost, created_at, completed_at, unit_id')
-            .eq('organization_id', organizationId),
+            .eq('organization_id', organization.id),
           
           supabase
             .from('units')
             .select('id, name')
-            .eq('organization_id', organizationId)
+            .eq('organization_id', organization.id)
         ]);
 
         if (leadsResponse.error) throw leadsResponse.error;
@@ -101,7 +101,7 @@ export const useReportsData = () => {
     };
 
     fetchData();
-  }, [organizationId]);
+  }, [organization]);
 
   return {
     leads,

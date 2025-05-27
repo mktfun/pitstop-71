@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -32,9 +31,10 @@ interface AddLeadModalProps {
   onClose: () => void;
   onSave: (leadData: Omit<Lead, 'id' | 'createdAt' | 'columnId'>) => void;
   editingLead?: Lead | null;
+  organizationId: string;
 }
 
-const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProps) => {
+const AddLeadModal = ({ isOpen, onClose, onSave, editingLead, organizationId }: AddLeadModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -121,6 +121,7 @@ const AddLeadModal = ({ isOpen, onClose, onSave, editingLead }: AddLeadModalProp
     
     const leadData = {
       ...formData,
+      organizationId,
       carModel: formData.carModel || undefined,
       carPlate: formData.carPlate || undefined,
       unitId: formData.unitId || undefined,

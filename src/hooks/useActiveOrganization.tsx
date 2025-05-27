@@ -3,15 +3,26 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
+interface Organization {
+  id: string;
+  name: string;
+  cnpj?: string;
+  phone?: string;
+  logo_url?: string;
+  created_at: string;
+  updated_at: string;
+  owner_user_id: string;
+}
+
 export const useActiveOrganization = () => {
   const { user } = useAuth();
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getActiveOrganization = async () => {
       if (!user) {
-        setOrganizationId(null);
+        setOrganization(null);
         setIsLoading(false);
         return;
       }
@@ -24,9 +35,9 @@ export const useActiveOrganization = () => {
           .eq('id', user.id)
           .single();
 
-        if (profile?.active_organization_id) {
-          setOrganizationId(profile.active_organization_id);
-        } else {
+        let organizationId = profile?.active_organization_id;
+
+        if (!organizationId) {
           // Fallback: get the first organization the user belongs to
           const { data: userRole } = await supabase
             .from('user_organization_roles')
@@ -35,8 +46,19 @@ export const useActiveOrganization = () => {
             .limit(1)
             .single();
 
-          if (userRole?.organization_id) {
-            setOrganizationId(userRole.organization_id);
+          organizationId = userRole?.organization_id;
+        }
+
+        if (organizationId) {
+          // Fetch the complete organization data
+          const { data: orgData } = await supabase
+            .from('organizations')
+            .select('*')
+            .eq('id', organizationId)
+            .single();
+
+          if (orgData) {
+            setOrganization(orgData);
           }
         }
       } catch (error) {
@@ -49,5 +71,5 @@ export const useActiveOrganization = () => {
     getActiveOrganization();
   }, [user]);
 
-  return { organizationId, isLoading };
+  return { organization, isLoading };
 };
